@@ -1,22 +1,22 @@
 window.addEventListener('DOMContentLoaded', () => {
-window.onresize = function () { location.reload(); }
+    window.onresize = function () { location.reload(); }
+    const FPS = 60;
+    let tfCanvas = document.querySelector("#simCanvas");
+    var c = tfCanvas.getContext("2d");
 
-let tfCanvas = document.querySelector("#simCanvas");
-var c = tfCanvas.getContext("2d");
-
-var displayWidth = window.innerWidth;
-var displayHeight = window.innerHeight;
-var scale = 2;
-tfCanvas.style.width = displayWidth + 'px';
-tfCanvas.style.height = displayHeight + 'px';
-tfCanvas.width = displayWidth * scale;
-tfCanvas.height = displayHeight * scale;
+    var displayWidth = window.innerWidth;
+    var displayHeight = window.innerHeight;
+    var scale = 2;
+    tfCanvas.style.width = displayWidth + 'px';
+    tfCanvas.style.height = displayHeight + 'px';
+    tfCanvas.width = displayWidth * scale;
+    tfCanvas.height = displayHeight * scale;
 
 
-var mouse = { x: 0, y: 0, down: false, nodeSelected: -1 };
+    var mouse = { x: 0, y: 0, down: false, nodeSelected: -1 };
 
-var rect = tfCanvas.getBoundingClientRect();
-//console.log(rect);
+    var rect = tfCanvas.getBoundingClientRect();
+    //console.log(rect);
 
     function getMousePos(canvas, evt) {
         var rect = canvas.getBoundingClientRect();
@@ -33,55 +33,74 @@ var rect = tfCanvas.getBoundingClientRect();
         mouse.y = mousePos.y * scale;
         mouse.down = e.buttons == 1;
         console.log(mouse);
-        console.log(particleArray[0]);
+        //console.log(particleArray[0]);
         //console.log(e.buttons == 1); 
         if (e.buttons == 0) {
             mouse.nodeSelected = -1;
         }
-        if(e.buttons == 1){
-            console.log("clicked");
-            for (var i = 0; i < particleArray.length; i++) {
-                var dx = Math.abs(mouse.x - particleArray[i].x);
-                var dy = Math.abs(mouse.y - particleArray[i].y);
-                var distance = Math.sqrt(dx * dx + dy * dy);
-                if (distance <= particleArray[i].radius + 1500) {
-                    //draw line to mouse
-                    c.beginPath();
-                    c.moveTo(particleArray[i].x, particleArray[i].y);
-                    c.lineTo(mouse.x, mouse.y);
-                    c.stroke();
 
-                    // add force to particle
-                    var dx = mouse.x - particleArray[i].x;
-                    var dy = mouse.y - particleArray[i].y;
-                    var distance = Math.sqrt(dx * dx + dy * dy);
-                    var force = distance * 0.0001;
-                    var angle = Math.atan2(dy, dx);
-                    var fx = Math.cos(angle) * force;
-                    var fy = Math.sin(angle) * force;
-                    particleArray[i].ax = fx;
-                    particleArray[i].ay = fy;
-                    
-                }
-            }
-        }    
 
     }, false);
 
-    // window.addEventListener('mousedown', function (e) {
-    //     var mousePos = getMousePos(tfCanvas, e);
+    window.addEventListener('mousedown', function (e) {
+        var mousePos = getMousePos(tfCanvas, e);
 
-    //     mouse.x = mousePos.x * scale;
-    //     mouse.y = mousePos.y * scale;
-    //     mouse.down = e.buttons == 1;
-    //     //console.log(mouse);
-    //     //console.log(e.buttons == 1); 
-    //     if (e.buttons == 0) {
-    //         mouse.nodeSelected = -1;
-    //     }
-        
-        
-    // }, false);
+        mouse.x = mousePos.x * scale;
+        mouse.y = mousePos.y * scale;
+        mouse.down = e.buttons == 1;
+        //console.log(mouse);
+        //console.log(e.buttons == 1); 
+        if (e.buttons == 0) {
+            mouse.nodeSelected = -1;
+        }
+        if (e.buttons == 1) {
+            dragBallInterval = setInterval(dragBalls, FPS /*execute every 100ms*/);
+        }
+
+
+    }, false);
+
+    window.addEventListener('mouseup', function (e) {
+        if(!(e.buttons == 1)){
+            clearInterval(dragBallInterval);
+        }
+    }, false);
+
+    function dragBalls() {
+        console.log("clicked");
+        let mouseRadius = 550;
+        for (var i = 0; i < particleArray.length; i++) {
+            var dx = Math.abs(mouse.x - particleArray[i].x);
+            var dy = Math.abs(mouse.y - particleArray[i].y);
+            var distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance <= particleArray[i].radius + mouseRadius) {
+                //draw line to mouse
+                c.beginPath();
+                c.moveTo(particleArray[i].x, particleArray[i].y);
+                c.lineTo(mouse.x, mouse.y);
+                c.stroke();
+                //draw circle at mouse
+                // c.beginPath();
+                // c.arc(mouse.x, mouse.y, mouseRadius, 0, Math.PI * 2, false);
+                // c.fillStyle = "red";
+                // c.fill();
+                // c.stroke();
+
+                // add force to particle
+                var dx = mouse.x - particleArray[i].x;
+                var dy = mouse.y - particleArray[i].y;
+                var distance = Math.sqrt(dx * dx + dy * dy);
+                var force = distance * 0.0005;
+                var angle = Math.atan2(dy, dx);
+                var fx = Math.cos(angle) * force;
+                var fy = Math.sin(angle) * force;
+                particleArray[i].ax = fx;
+                particleArray[i].ay = fy;
+
+            }
+
+        }
+    }
 
     function Cricle(x, y, vx, vy, ax, ay, radius, color, type) {
         this.x = x;
@@ -92,8 +111,8 @@ var rect = tfCanvas.getBoundingClientRect();
         this.ay = ay;
         this.radius = radius;
         this.color = color;
-        //this.color = "red"
         this.type = type;
+        this.elasticity = 0.75;
 
         this.draw = function () {
             c.beginPath();
@@ -128,7 +147,7 @@ var rect = tfCanvas.getBoundingClientRect();
             this.draw();
         }
 
-        this.moveCircle = function (){
+        this.moveCircle = function () {
             this.x += this.vx;
             this.y += this.vy;
             this.vx += this.ax;
@@ -138,7 +157,7 @@ var rect = tfCanvas.getBoundingClientRect();
             this.bounce();
         }
 
-        this.bounce = function (){
+        this.bounce = function () {
             // if (this.x + this.radius >= tfCanvas.width || this.x - this.radius <= 0) {
             //     this.vx = -this.vx;
             // }
@@ -164,12 +183,12 @@ var rect = tfCanvas.getBoundingClientRect();
             }
 
 
-            
+
             for (var i = 0; i < particleArray.length; i++) {
                 if (this === particleArray[i]) continue;
                 if (this.checkCollision(particleArray[i])) {
                     //console.log("collision");
-                    
+
                 }
             }
         }
@@ -180,7 +199,7 @@ var rect = tfCanvas.getBoundingClientRect();
             var dy = this.y - otherCircle.y;
             var distance = Math.sqrt(dx * dx + dy * dy);
 
-            
+
             if (distance <= this.radius + otherCircle.radius + 0.001) {
                 //otherCircle.color = "red";
                 //this.color = "blue";
@@ -197,24 +216,24 @@ var rect = tfCanvas.getBoundingClientRect();
                 this.y = collisionPointMidY + this.radius * normalizedDy;
                 otherCircle.x = collisionPointMidX - otherCircle.radius * normalizedDx;
                 otherCircle.y = collisionPointMidY - otherCircle.radius * normalizedDy;
-                
+
 
 
                 // conservation of momentum
-                var mass = 1;
-                var otherMass = 1;
-                var v1in = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-                var v2in = Math.sqrt(otherCircle.vx * otherCircle.vx + otherCircle.vy * otherCircle.vy);
-                var momentum = v1in * mass + v2in * otherMass;
+                // var mass = 1;
+                // var otherMass = 1;
+                // var v1in = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                // var v2in = Math.sqrt(otherCircle.vx * otherCircle.vx + otherCircle.vy * otherCircle.vy);
+                // var momentum = v1in * mass + v2in * otherMass;
 
 
-                var elasticity  = 0.99;
- 
 
-                let tempV1 = this.vx * elasticity + otherCircle.vx * (1 - elasticity);
-                let tempV2 = this.vy * elasticity + otherCircle.vy * (1 - elasticity);
-                this.vx = otherCircle.vx * elasticity + this.vx * (1 - elasticity);
-                this.vy = otherCircle.vy * elasticity + this.vy * (1 - elasticity);
+
+
+                let tempV1 = this.vx * this.elasticity + otherCircle.vx * (1 - otherCircle.elasticity);
+                let tempV2 = this.vy * this.elasticity + otherCircle.vy * (1 - otherCircle.elasticity);
+                this.vx = otherCircle.vx * otherCircle.elasticity + this.vx * (1 - this.elasticity);
+                this.vy = otherCircle.vy * otherCircle.elasticity + this.vy * (1 - this.elasticity);
                 otherCircle.vx = tempV1;
                 otherCircle.vy = tempV2;
                 // console.log(this.vx);
@@ -222,21 +241,21 @@ var rect = tfCanvas.getBoundingClientRect();
                 // console.log(otherCircle.vx);
                 // console.log(otherCircle.vy);
 
-                
+
                 return true;
             } else {
                 return false;
             }
         }
 
-        this.drawCircleVelocity = function() {
+        this.drawCircleVelocity = function () {
             c.beginPath();
             c.moveTo(this.x, this.y);
             c.lineTo(this.x + this.vx * 10, this.y + this.vy * 10);
             c.stroke();
         }
 
-        
+
     }
 
     var particleArray = [];
@@ -278,12 +297,12 @@ var rect = tfCanvas.getBoundingClientRect();
         arrayOfRainbowColors.push(color);
         return color;
     }
-    
+
     function checkSpawn(x, y) {
         for (let i = 0; i < particleArray.length; i++) {
             let particle = particleArray[i];
-            if(particle.x + (particle.radius * 2) > x && particle.x - (particle.radius * 2) < x 
-                && particle.y + (particle.radius * 2) > y && particle.y - (particle.radius * 2) < y){
+            if (particle.x + (particle.radius * 2) > x && particle.x - (particle.radius * 2) < x
+                && particle.y + (particle.radius * 2) > y && particle.y - (particle.radius * 2) < y) {
                 return false;
             }
         }
@@ -291,21 +310,21 @@ var rect = tfCanvas.getBoundingClientRect();
     }
 
 
-    function createParticle() { 
+    function createParticle() {
         var radius = 50;
-        var x = Math.random() * (tfCanvas.width-radius * 2) + radius;
-        var y = Math.random() * (tfCanvas.height-radius * 2) + radius;
-        while(!checkSpawn(x, y)){
-            x = Math.random() * (tfCanvas.width-radius * 2) + radius;
-            y = Math.random() * (tfCanvas.height-radius * 2) + radius;
+        var x = Math.random() * (tfCanvas.width - radius * 2) + radius;
+        var y = Math.random() * (tfCanvas.height - radius * 2) + radius;
+        while (!checkSpawn(x, y)) {
+            x = Math.random() * (tfCanvas.width - radius * 2) + radius;
+            y = Math.random() * (tfCanvas.height - radius * 2) + radius;
         }
 
-        let g = 2;
-        var vx = Math.random() * 2 -1;
-        var vy = Math.random() * 2 -1;
-        var ax = Math.random() * 2 -1;
-        var ay = Math.random() * 2 -1;
-        
+        let g = 9.81;
+        var vx = Math.random() * 2 - 1;
+        var vy = Math.random() * 2 - 1;
+        var ax = Math.random() * 2 - 1;
+        var ay = Math.random() * 2 - 1;
+
 
 
         var color = getNextColor();
@@ -313,19 +332,19 @@ var rect = tfCanvas.getBoundingClientRect();
         var type = 'water';
         particleArray.push(new Cricle(x, y, vx, vy, ax, ay, radius, color, type));
     }
-    const FPS = 60;
+    
     function animate() {
         //requestAnimationFrame(animate);
-        c.clearRect(0, 0, innerWidth*2, innerHeight*2);
-        
+        c.clearRect(0, 0, innerWidth * 2, innerHeight * 2);
+
         c.lineWidth = 1;
-        for (var i = 0; i < particleArray.length; i++){
+        for (var i = 0; i < particleArray.length; i++) {
             particleArray[i].moveCircle();
             particleArray[i].update();
             particleArray[i].drawCircleVelocity();
 
         }
-        
+
     }
     var color = getNextColor();
     //particleArray.push(new Cricle(625, 300, -0.5, 0.5, 0, 0, 50, color, "water"));
@@ -340,5 +359,5 @@ var rect = tfCanvas.getBoundingClientRect();
     //animate();
 
     window.setInterval(animate, 1000 / FPS);
-    
+
 });

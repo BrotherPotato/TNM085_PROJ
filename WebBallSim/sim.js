@@ -185,8 +185,19 @@ var rect = tfCanvas.getBoundingClientRect();
                 //otherCircle.color = "red";
                 //this.color = "blue";
 
-                var directionOfCollision = Math.atan2(dy, dx);
-                console.log((directionOfCollision * Math.PI/180) % 360);
+                //get normalized direction vector
+                normalizedDx = dx / distance;
+                normalizedDy = dy / distance;
+                //calculate collision point
+                collisionPointMidX = this.x - dx / 2;
+                collisionPointMidY = this.y - dy / 2;
+
+                //fix new position with collisionPointMid
+                this.x = collisionPointMidX + this.radius * normalizedDx;
+                this.y = collisionPointMidY + this.radius * normalizedDy;
+                otherCircle.x = collisionPointMidX - otherCircle.radius * normalizedDx;
+                otherCircle.y = collisionPointMidY - otherCircle.radius * normalizedDy;
+                
 
 
                 // conservation of momentum
@@ -302,7 +313,7 @@ var rect = tfCanvas.getBoundingClientRect();
         var type = 'water';
         particleArray.push(new Cricle(x, y, vx, vy, ax, ay, radius, color, type));
     }
-    const FPS = 120;
+    const FPS = 60;
     function animate() {
         //requestAnimationFrame(animate);
         c.clearRect(0, 0, innerWidth*2, innerHeight*2);

@@ -244,18 +244,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
     let btn = document.querySelector("#createParticleBtn");
     btn.addEventListener("click", function () {
-        createParticle();
-        createParticle();
-        createParticle();
-        createParticle();
-        createParticle();
-        createParticle();
-        createParticle();
-        createParticle();
-        createParticle();
-        createParticle();
-        createParticle();
-        createParticle();
+
+        for (let i = 0; i < 10; index++) {
+            createParticle();
+        }
     });
 
     function getNextColor() {

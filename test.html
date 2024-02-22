@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verlet Bouncing Ball</title>
+  <style>
+    canvas {
+      border: 1px solid #000;
+    }
+  </style>
+</head>
+<body>
+  <button id="spawnBall">Spawn Ball</button>
+  <canvas id="canvas" width="1000" height="800"></canvas>
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    // Ball properties
+const balls = [
+  {
+    position: { x: 100, y: 100 },
+    oldPosition: { x: 90, y: 90 },
+    radius: 20,
+    bounceFactor: 0.9,
+    gravity: 0.5,
+  },
+  // Add more balls here...
+];
+
+window.addEventListener('mousedown', function (e) {
+  var mousePos = getMousePos(canvas, e);
+  var message = 'Mouse position: ' + mousePos.x + ',' + mousePos.y;
+  console.log(message);
+  // Spawn a new ball at the mouse position
+  balls.push({
+    position: { x: mousePos.x, y: mousePos.y },
+    oldPosition: { x: mousePos.x, y: mousePos.y },
+    radius: 20,
+    bounceFactor: 0.9,
+    gravity: 0.5,
+  });
+}, false);
+
+document.getElementById('spawnBall').addEventListener('click', function () {
+    // Spawn a new ball at a random position
+    balls.push({
+        position: { x: Math.random() * canvas.width, y: Math.random() * canvas.height },
+        oldPosition: { x: Math.random() * canvas.width, y: Math.random() * canvas.height },
+        radius: 20,
+        bounceFactor: 0.9,
+        gravity: 0.5,
+    });
+});
+
+function update() {
+  // Clear the canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (let ball of balls) {
+    const newPosition = {
+      x: 2 * ball.position.x - ball.oldPosition.x,
+      y: 2 * ball.position.y - ball.oldPosition.y + ball.gravity,
+    };
+
+    ball.oldPosition = { ...ball.position };
+    ball.position = { ...newPosition };
+
+    // Bounce off the ground
+    if (ball.position.y > canvas.height - ball.radius) {
+      ball.position.y = canvas.height - ball.radius;
+      ball.oldPosition.y = ball.position.y + (ball.position.y - ball.oldPosition.y) * ball.bounceFactor;
+    }
+
+    // Bounce off the walls
+    if (ball.position.x < ball.radius || ball.position.x > canvas.width - ball.radius) {
+      ball.oldPosition.x = ball.position.x + (ball.position.x - ball.oldPosition.x) * ball.bounceFactor;
+    }
+
+    // Bounce off the ceiling
+    if (ball.position.y < ball.radius) {
+      ball.position.y = ball.radius;
+      ball.oldPosition.y = ball.position.y + (ball.position.y - ball.oldPosition.y) * ball.bounceFactor;
+    }
+
+    // Draw the ball
+    ctx.beginPath();
+    ctx.arc(ball.position.x, ball.position.y, ball.radius, 0, 2 * Math.PI);
+    ctx.fillStyle = "#0095DD";
+    ctx.fill();
+    ctx.closePath();
+  }
+
+  // Check for collisions between all pairs of balls
+  for (let i = 0; i < balls.length; i++) {
+    for (let j = i + 1; j < balls.length; j++) {
+      const dx = balls[j].position.x - balls[i].position.x;
+      const dy = balls[j].position.y - balls[i].position.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      if (distance < balls[i].radius + balls[j].radius) {
+        // The balls are colliding
+        // Here you would typically adjust the positions and velocities of the balls
+        // This is a complex topic that involves physics and is beyond the scope of this example
+      }
+    }
+  }
+
+  // Request the next animation frame
+  requestAnimationFrame(update);
+}
+
+// Start the animation loop
+update();
+
+  </script>
+</body>
+</html>

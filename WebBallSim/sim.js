@@ -174,6 +174,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     collidivec.push(new collidi(this.x, this.y, particleArray[i].x, particleArray[i].y))
                     console.log(collidivec.length);
                     
+                    
                 }
             }
         }

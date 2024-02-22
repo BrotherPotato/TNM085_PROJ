@@ -162,13 +162,18 @@ window.addEventListener('DOMContentLoaded', () => {
                 this.vy = -this.vy;
             }
 
-
             //collision check
             for (var i = 0; i < particleArray.length; i++) {
                 if (this === particleArray[i]) continue; //check if self
-                if (this.checkCollision(particleArray[i])) { 
-                    //console.log("collision");
+                if (this.checkCollision(particleArray[i])) {
 
+
+                    //console.log("collision");
+                    //deltaX = math.abs(this.x - particleArray[i].x)
+                    //deltaY = math.abs(this.y - particleArray[i].y)
+                    collidivec.push(new collidi(this.x, this.y, particleArray[i].x, particleArray[i].y))
+                    console.log(collidivec.length);
+                    
                 }
             }
         }
@@ -226,6 +231,17 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
 
+    } // end of class circle
+
+    var collidivec = [];
+    class collidi{
+        constructor(fhpx, fhpy, lhpx, lhpy){ //first hit pos | last hit pos
+        this.fhpx = fhpx;
+        this.fhpy = fhpy;
+        this.lhpx = lhpx;
+        this.lhpy = lhpy;
+    }
+
     }
 
     var particleArray = [];
@@ -248,14 +264,19 @@ window.addEventListener('DOMContentLoaded', () => {
 
     let btn = document.querySelector("#createParticleBtn");
     btn.addEventListener("click", function () {
-        let c1 = new circle(getNextColor(),1);
 
-        while(!checkSpawn(c1.x, c1.y)){
-            c1 = new circle(getNextColor(),1);
+        for (let i = 0; i < 10; i++) {
+            
+            let c1 = new circle(getNextColor(),1);
+    
+            while(!checkSpawn(c1.x, c1.y)){
+                c1 = new circle(getNextColor(),1);
+            }
+    
+            particleArray.push(c1);
+            
         }
-
-        particleArray.push(c1);
-        console.log(new circle(getNextColor(),1));
+        //console.log(new circle(getNextColor(),1));
     });
 
     function getNextColor() {
@@ -274,30 +295,6 @@ window.addEventListener('DOMContentLoaded', () => {
         }
         return true;
     }
-
-
-    // function createParticle() {
-    //     //var radius = 50;
-    //     var x = Math.random() * (tfCanvas.width - radius * 2) + radius;
-    //     var y = Math.random() * (tfCanvas.height - radius * 2) + radius;
-    //     while (!checkSpawn(x, y)) {
-    //         x = Math.random() * (tfCanvas.width - radius * 2) + radius;
-    //         y = Math.random() * (tfCanvas.height - radius * 2) + radius;
-    //     }
-
-    //     let g = 9.81;
-    //     var vx = Math.random() * 2 - 1;
-    //     var vy = Math.random() * 2 - 1;
-    //     var ax = Math.random() * 2 - 1;
-    //     var ay = Math.random() * 2 - 1;
-
-
-
-    //     var color = getNextColor();
-    //     //console.log(color);
-    //     var type = 'water';
-    //     particleArray.push(new circle());
-    // }
     
     function animate() {
         //requestAnimationFrame(animate);
@@ -308,21 +305,18 @@ window.addEventListener('DOMContentLoaded', () => {
             particleArray[i].moveCircle();
             particleArray[i].update();
             particleArray[i].drawCircleVelocity();
-
         }
+        
+        if(!(collidivec.length == 0)){
+            collidivec.forEach(element => {
+                c.beginPath();
+                c.moveTo(element.fhpx, element.fhpy);
+                c.lineTo(element.lhpx, element.lhpy);
+                c.stroke();
+            });
+        }   
 
     }
-    var color = getNextColor();
-    //particleArray.push(new Cricle(625, 300, -0.5, 0.5, 0, 0, 50, color, "water"));
-    //particleArray.push(new Cricle(300, 600, 2, -2, 0, 0, 50, color, "water"));
-
-    //particleArray.push(new Cricle(500, 500, 1, 1, 0, 0, 10, "#283618", "water"));
-    //particleArray.push(new Cricle(800, 800, -2, -2, 0, 0, 10, "#283618", "water"));
-
-    //particleArray.push(new Cricle(500, 500, 1, 0, 0, 0, 10, color, "water"));
-    //particleArray.push(new Cricle(700, 500, -2, 0, 0, 0, 10, color, "water"));
-    //createParticle()
-    //animate();
 
     window.setInterval(animate, 1000 / FPS);
 

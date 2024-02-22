@@ -102,69 +102,46 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function Cricle(x, y, vx, vy, ax, ay, radius, color, type) {
-        this.x = x;
-        this.y = y;
-        this.vx = vx;
-        this.vy = vy;
-        this.ax = ax;
-        this.ay = ay;
-        this.radius = radius;
-        this.color = color;
-        this.type = type;
-        this.elasticity = 0.75;
+    class circle{
 
-        this.draw = function () {
+        constructor(x, y, vx, vy, ax, ay, radius, color, type){
+            this.x = x;
+            this.y = y;
+            this.vx = vx;
+            this.vy = vy;
+            this.ax = ax;
+            this.ay = ay;
+            this.radius = radius;
+            this.color = color;
+            this.type = type;
+            this.elasticity = 0.5;
+        }
+
+        draw(){
             c.beginPath();
             c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
 
-            //c.fillStyle = this.color;
-            //console.log(this.color);    
-            //c.fillStyle = "red";
             c.fillStyle = hexToRgb(this.color);
-            //c.fillStyle = this.color;
-
             c.fill();
-
-            //context.strokeStyle = '#003300';
             c.stroke();
         }
 
-        this.update = function () {
-            /*
-            if (Math.abs(mouse.x - this.x) < 20 && Math.abs(mouse.y - this.y) < 20) {
-                if (this.radius < maxRadius) {
-                    this.radius += 1;
-                }
-
-            } else if (this.radius > minRadius) {
-                this.radius -= 1;
-            }
-            */
-            //console.log(this.x);
-
-            //console.log(this.x);
-            this.draw();
+        update(){
+            this.draw;
         }
 
-        this.moveCircle = function () {
+        moveCircle(){ // updates every 
             this.x += this.vx;
             this.y += this.vy;
             this.vx += this.ax;
             this.vy += this.ay;
-            this.ax -= this.ax * 0.1;
-            this.ay -= this.ay * 0.1;
+            this.ax -= this.ax * 0.2;
+            this.ay -= this.ay * 0.2;
             this.bounce();
         }
 
-        this.bounce = function () {
-            // if (this.x + this.radius >= tfCanvas.width || this.x - this.radius <= 0) {
-            //     this.vx = -this.vx;
-            // }
-            // if (this.y + this.radius >= tfCanvas.height || this.y - this.radius <= 0) {
-            //     this.vy = -this.vy;
-            // }
-
+        bounce(){
+            // Bounds calculations
             if (this.x + this.radius >= tfCanvas.width) {
                 this.x = tfCanvas.width - this.radius;
                 this.vx = -this.vx;
@@ -183,17 +160,17 @@ window.addEventListener('DOMContentLoaded', () => {
             }
 
 
-
+            //collision check
             for (var i = 0; i < particleArray.length; i++) {
-                if (this === particleArray[i]) continue;
-                if (this.checkCollision(particleArray[i])) {
+                if (this === particleArray[i]) continue; //check if self
+                if (this.checkCollision(particleArray[i])) { 
                     //console.log("collision");
 
                 }
             }
         }
 
-        this.checkCollision = function (otherCircle) {
+        checkCollision(otherCircle){
             // add move ball x and y on hit
             var dx = this.x - otherCircle.x;
             var dy = this.y - otherCircle.y;
@@ -217,19 +194,6 @@ window.addEventListener('DOMContentLoaded', () => {
                 otherCircle.x = collisionPointMidX - otherCircle.radius * normalizedDx;
                 otherCircle.y = collisionPointMidY - otherCircle.radius * normalizedDy;
 
-
-
-                // conservation of momentum
-                // var mass = 1;
-                // var otherMass = 1;
-                // var v1in = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-                // var v2in = Math.sqrt(otherCircle.vx * otherCircle.vx + otherCircle.vy * otherCircle.vy);
-                // var momentum = v1in * mass + v2in * otherMass;
-
-
-
-
-
                 let tempV1 = this.vx * this.elasticity + otherCircle.vx * (1 - otherCircle.elasticity);
                 let tempV2 = this.vy * this.elasticity + otherCircle.vy * (1 - otherCircle.elasticity);
                 this.vx = otherCircle.vx * otherCircle.elasticity + this.vx * (1 - this.elasticity);
@@ -248,15 +212,173 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        this.drawCircleVelocity = function () {
+        drawCircleVelocity(){
             c.beginPath();
             c.moveTo(this.x, this.y);
             c.lineTo(this.x + this.vx * 10, this.y + this.vy * 10);
             c.stroke();
         }
+          
+
 
 
     }
+
+    // function Cricle(x, y, vx, vy, ax, ay, radius, color, type) {
+    //     this.x = x;
+    //     this.y = y;
+    //     this.vx = vx;
+    //     this.vy = vy;
+    //     this.ax = ax;
+    //     this.ay = ay;
+    //     this.radius = radius;
+    //     this.color = color;
+    //     this.type = type;
+    //     this.elasticity = 0.5;
+
+    //     this.draw = function () {
+    //         c.beginPath();
+    //         c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+
+    //         //c.fillStyle = this.color;
+    //         //console.log(this.color);    
+    //         //c.fillStyle = "red";
+    //         c.fillStyle = hexToRgb(this.color);
+    //         //c.fillStyle = this.color;
+
+    //         c.fill();
+
+    //         //context.strokeStyle = '#003300';
+    //         c.stroke();
+    //     }
+
+    //     this.update = function () {
+    //         /*
+    //         if (Math.abs(mouse.x - this.x) < 20 && Math.abs(mouse.y - this.y) < 20) {
+    //             if (this.radius < maxRadius) {
+    //                 this.radius += 1;
+    //             }
+
+    //         } else if (this.radius > minRadius) {
+    //             this.radius -= 1;
+    //         }
+    //         */
+    //         //console.log(this.x);
+
+    //         //console.log(this.x);
+    //         this.draw();
+    //     }
+
+    //     this.moveCircle = function () {
+    //         this.x += this.vx;
+    //         this.y += this.vy;
+    //         this.vx += this.ax;
+    //         this.vy += this.ay;
+    //         this.ax -= this.ax * 0.1;
+    //         this.ay -= this.ay * 0.1;
+    //         this.bounce();
+    //     }
+
+    //     this.bounce = function () {
+    //         // if (this.x + this.radius >= tfCanvas.width || this.x - this.radius <= 0) {
+    //         //     this.vx = -this.vx;
+    //         // }
+    //         // if (this.y + this.radius >= tfCanvas.height || this.y - this.radius <= 0) {
+    //         //     this.vy = -this.vy;
+    //         // }
+
+    //         if (this.x + this.radius >= tfCanvas.width) {
+    //             this.x = tfCanvas.width - this.radius;
+    //             this.vx = -this.vx;
+    //         }
+    //         if (this.x - this.radius <= 0) {
+    //             this.x = this.radius;
+    //             this.vx = -this.vx;
+    //         }
+    //         if (this.y + this.radius >= tfCanvas.height) {
+    //             this.y = tfCanvas.height - this.radius;
+    //             this.vy = -this.vy;
+    //         }
+    //         if (this.y - this.radius <= 0) {
+    //             this.y = this.radius;
+    //             this.vy = -this.vy;
+    //         }
+
+
+
+    //         for (var i = 0; i < particleArray.length; i++) {
+    //             if (this === particleArray[i]) continue;
+    //             if (this.checkCollision(particleArray[i])) {
+    //                 //console.log("collision");
+
+    //             }
+    //         }
+    //     }
+
+    //     this.checkCollision = function (otherCircle) {
+    //         // add move ball x and y on hit
+    //         var dx = this.x - otherCircle.x;
+    //         var dy = this.y - otherCircle.y;
+    //         var distance = Math.sqrt(dx * dx + dy * dy);
+
+
+    //         if (distance <= this.radius + otherCircle.radius + 0.001) {
+    //             //otherCircle.color = "red";
+    //             //this.color = "blue";
+
+    //             //get normalized direction vector
+    //             normalizedDx = dx / distance;
+    //             normalizedDy = dy / distance;
+    //             //calculate collision point
+    //             collisionPointMidX = this.x - dx / 2;
+    //             collisionPointMidY = this.y - dy / 2;
+
+    //             //fix new position with collisionPointMid
+    //             this.x = collisionPointMidX + this.radius * normalizedDx;
+    //             this.y = collisionPointMidY + this.radius * normalizedDy;
+    //             otherCircle.x = collisionPointMidX - otherCircle.radius * normalizedDx;
+    //             otherCircle.y = collisionPointMidY - otherCircle.radius * normalizedDy;
+
+
+
+    //             // conservation of momentum
+    //             // var mass = 1;
+    //             // var otherMass = 1;
+    //             // var v1in = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+    //             // var v2in = Math.sqrt(otherCircle.vx * otherCircle.vx + otherCircle.vy * otherCircle.vy);
+    //             // var momentum = v1in * mass + v2in * otherMass;
+
+
+
+
+
+    //             let tempV1 = this.vx * this.elasticity + otherCircle.vx * (1 - otherCircle.elasticity);
+    //             let tempV2 = this.vy * this.elasticity + otherCircle.vy * (1 - otherCircle.elasticity);
+    //             this.vx = otherCircle.vx * otherCircle.elasticity + this.vx * (1 - this.elasticity);
+    //             this.vy = otherCircle.vy * otherCircle.elasticity + this.vy * (1 - this.elasticity);
+    //             otherCircle.vx = tempV1;
+    //             otherCircle.vy = tempV2;
+    //             // console.log(this.vx);
+    //             // console.log(this.vy);
+    //             // console.log(otherCircle.vx);
+    //             // console.log(otherCircle.vy);
+
+
+    //             return true;
+    //         } else {
+    //             return false;
+    //         }
+    //     }
+
+    //     this.drawCircleVelocity = function () {
+    //         c.beginPath();
+    //         c.moveTo(this.x, this.y);
+    //         c.lineTo(this.x + this.vx * 10, this.y + this.vy * 10);
+    //         c.stroke();
+    //     }
+
+
+    // }
 
     var particleArray = [];
     var arrayOfRainbowColors = [

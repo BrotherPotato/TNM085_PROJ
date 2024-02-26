@@ -54,6 +54,8 @@ document.getElementById('spawnBall').addEventListener('click', function () {
     });
 });
 
+
+
 function update() {
   // Clear the canvas
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -90,6 +92,17 @@ function update() {
     ctx.fillStyle = "#0095DD";
     ctx.fill();
     ctx.closePath();
+
+    const velocity = {
+      x: ball.position.x - ball.oldPosition.x,
+      y: ball.position.y - ball.oldPosition.y,
+    };
+
+    // If the velocity is close to zero, respawn the ball
+    if (Math.abs(velocity.x) < 0.01 && Math.abs(velocity.y) < 0.01) {
+      ball.position = { x: Math.random() * canvas.width, y: Math.random() * canvas.height };
+      ball.oldPosition = { x: ball.position.x, y: ball.position.y };
+    }
   }
 
   // Check for collisions between all pairs of balls

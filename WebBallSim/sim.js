@@ -1,3 +1,4 @@
+
 window.addEventListener('DOMContentLoaded', () => {
     window.onresize = function () { location.reload(); }
     const FPS = 60;
@@ -12,6 +13,24 @@ window.addEventListener('DOMContentLoaded', () => {
     tfCanvas.width = displayWidth * scale;
     tfCanvas.height = displayHeight * scale;
 
+<<<<<<< Updated upstream
+=======
+    // Define constants
+    const g = 9.81; // acceleration due to gravity (m/s^2)
+    const e = 0.8; // coefficient of restitution
+    const dt = 0.001; // time step (s)
+    const total_time = 10; // total simulation time (s)
+    const m = 0.5; // mass (kg)
+    const r = 0.02; // radius
+    const A = Math.PI * (r ** 2); // cross section area (m^2)
+    const rho = 1.2; // air density (kg/m^3)
+    const C = 0.47; // drag coeff
+
+    const h = 1000/FPS; //step size
+
+    console.log(performance.now());
+
+>>>>>>> Stashed changes
 
     var mouse = { x: 0, y: 0, down: false, nodeSelected: -1 };
 
@@ -102,7 +121,12 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+<<<<<<< Updated upstream
     const g = 9.81;
+=======
+    let previous_time = performance.now(); // previous time (ms)
+
+>>>>>>> Stashed changes
     class circle{
 
         constructor(color, type){
@@ -133,6 +157,7 @@ window.addEventListener('DOMContentLoaded', () => {
             this.draw();
         }
 
+<<<<<<< Updated upstream
         moveCircle(){ // updates every 
             this.x += this.vx;
             this.y += this.vy;
@@ -140,6 +165,44 @@ window.addEventListener('DOMContentLoaded', () => {
             this.vy += this.ay;
             this.ax -= this.ax * 0.1;
             this.ay -= this.ay * 0.1;
+=======
+        moveCircle(){ // updates every frame
+
+            
+        let current_time = performance.now(); // current time (ms)
+        let dt = (current_time - previous_time) / 1000; // elapsed time (s)
+        previous_time = current_time; // previous time (s)
+        console.log(dt);
+
+
+            // Calculate drag force
+            let F_drag_x, F_drag_y, v_mag_x, v_mag_y, scaled_r;
+            /*  if (this.y <= 0) {
+                 this.vx *= e;
+                 this.vy *= -e;
+             } else { */
+            v_mag_x = this.vx ** 2;
+            v_mag_y = this.vy ** 2; 
+
+            //scale the radius
+            scaled_r = this.radius * 0.0001;
+
+            F_drag_x = -0.5 * rho * (Math.PI * (scaled_r ** 2)) * C * this.vx * v_mag_x;
+            F_drag_y = -0.5 * rho * (Math.PI * (scaled_r ** 2)) * C * this.vy * v_mag_y;
+
+            this.ax = (F_drag_x / m);
+            this.ay = (g + (F_drag_y / m));
+            // }
+
+            // Update velocity
+            this.vx += this.ax * dt;
+            this.vy += this.ay * dt;
+
+            // Update position
+            this.x += this.vx * dt;
+            this.y += this.vy * dt;
+
+>>>>>>> Stashed changes
             this.bounce();
         }
 
@@ -308,6 +371,7 @@ window.addEventListener('DOMContentLoaded', () => {
             particleArray[i].drawCircleVelocity();
         }
         
+<<<<<<< Updated upstream
         if(!(collidivec.length == 0)){ // collision line
             collidivec.forEach(element => {
                 c.beginPath();
@@ -317,8 +381,20 @@ window.addEventListener('DOMContentLoaded', () => {
             });
         }   
 
+=======
+        // if(!(collidivec.length == 0)){ // collision line
+        //     collidivec.forEach(element => {
+        //         c.beginPath();
+        //         c.moveTo(element.fhpx, element.fhpy);
+        //         c.lineTo(element.lhpx, element.lhpy);
+        //         c.stroke();
+        //     });
+        // }   
+        //animate();
+>>>>>>> Stashed changes
     }
 
-    window.setInterval(animate, 1000 / FPS);
+    window.setInterval(animate, dt);
+    //animate();
 
 });

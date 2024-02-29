@@ -308,7 +308,7 @@ window.addEventListener('DOMContentLoaded', () => {
             particleArray[i].drawCircleVelocity();
         }
         
-        if(!(collidivec.length == 0)){
+        if(!(collidivec.length == 0)){ // collision line
             collidivec.forEach(element => {
                 c.beginPath();
                 c.moveTo(element.fhpx, element.fhpy);

@@ -12,6 +12,19 @@ window.addEventListener('DOMContentLoaded', () => {
     tfCanvas.width = displayWidth * scale;
     tfCanvas.height = displayHeight * scale;
 
+    // Define constants
+    const g = 9.81; // acceleration due to gravity (m/s^2)
+    const e = 0.8; // coefficient of restitution
+    const dt = 0.001; // time step (s)
+    const total_time = 10; // total simulation time (s)
+    const m = 0.5; // mass (kg)
+    const r = 0.02; // radius
+    const A = Math.PI * (r ** 2); // cross section area (m^2)
+    const rho = 1.2; // air density (kg/m^3)
+    const C = 0.47; // drag coeff
+
+    const h = 1/6; //step size
+
 
     var mouse = { x: 0, y: 0, down: false, nodeSelected: -1 };
 
@@ -90,19 +103,25 @@ window.addEventListener('DOMContentLoaded', () => {
                 var dx = mouse.x - particleArray[i].x;
                 var dy = mouse.y - particleArray[i].y;
                 var distance = Math.sqrt(dx * dx + dy * dy);
-                var force = distance * 0.0005;
+                var force = distance * 2;
                 var angle = Math.atan2(dy, dx);
                 var fx = Math.cos(angle) * force;
                 var fy = Math.sin(angle) * force;
-                particleArray[i].ax = fx;
-                particleArray[i].ay = fy;
+
+                particleArray[i].ax += fx/m;
+                particleArray[i].ay += fy/m;
+
+                particleArray[i].vx += particleArray[i].ax * h;
+                particleArray[i].vy += particleArray[i].ay * h;
+
+                particleArray[i].x += particleArray[i].vx * h;
+                particleArray[i].y += particleArray[i].vy * h;
 
             }
 
         }
     }
 
-    const g = 9.81;
     class circle{
 
         constructor(color, type){
@@ -115,7 +134,7 @@ window.addEventListener('DOMContentLoaded', () => {
             this.ay = Math.random() * 2 - 1;
             this.color = color;
             this.type = type;
-            this.elasticity = 0.75;
+            this.elasticity = e;
 
         }
 
@@ -133,13 +152,34 @@ window.addEventListener('DOMContentLoaded', () => {
             this.draw();
         }
 
-        moveCircle(){ // updates every 
-            this.x += this.vx;
-            this.y += this.vy;
-            this.vx += this.ax;
-            this.vy += this.ay;
-            this.ax -= this.ax * 0.1;
-            this.ay -= this.ay * 0.1;
+        moveCircle(){ // updates every frame
+            // Calculate drag force
+            let F_drag_x, F_drag_y, v_mag_x, v_mag_y, scaled_r;
+            /*  if (this.y <= 0) {
+                 this.vx *= e;
+                 this.vy *= -e;
+             } else { */
+            v_mag_x = this.vx ** 2;
+            v_mag_y = this.vy ** 2; 
+
+            //scale the radius
+            scaled_r = this.radius * 0.0001;
+
+            F_drag_x = -0.5 * rho * (Math.PI * (scaled_r ** 2)) * C * this.vx * v_mag_x;
+            F_drag_y = -0.5 * rho * (Math.PI * (scaled_r ** 2)) * C * this.vy * v_mag_y;
+
+            this.ax = (F_drag_x / m);
+            this.ay = (g + (F_drag_y / m));
+            // }
+
+            // Update velocity
+            this.vx += this.ax * h;
+            this.vy += this.ay * h;
+
+            // Update position
+            this.x += this.vx * h;
+            this.y += this.vy * h;
+
             this.bounce();
         }
 
@@ -308,14 +348,14 @@ window.addEventListener('DOMContentLoaded', () => {
             particleArray[i].drawCircleVelocity();
         }
         
-        if(!(collidivec.length == 0)){ // collision line
-            collidivec.forEach(element => {
-                c.beginPath();
-                c.moveTo(element.fhpx, element.fhpy);
-                c.lineTo(element.lhpx, element.lhpy);
-                c.stroke();
-            });
-        }   
+        // if(!(collidivec.length == 0)){ // collision line
+        //     collidivec.forEach(element => {
+        //         c.beginPath();
+        //         c.moveTo(element.fhpx, element.fhpy);
+        //         c.lineTo(element.lhpx, element.lhpy);
+        //         c.stroke();
+        //     });
+        // }   
 
     }
 

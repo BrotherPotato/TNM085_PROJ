@@ -13,8 +13,6 @@ window.addEventListener('DOMContentLoaded', () => {
     tfCanvas.width = displayWidth * scale;
     tfCanvas.height = displayHeight * scale;
 
-<<<<<<< Updated upstream
-=======
     // Define constants
     const g = 9.81; // acceleration due to gravity (m/s^2)
     const e = 0.8; // coefficient of restitution
@@ -30,7 +28,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
     console.log(performance.now());
 
->>>>>>> Stashed changes
 
     var mouse = { x: 0, y: 0, down: false, nodeSelected: -1 };
 
@@ -121,12 +118,8 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-<<<<<<< Updated upstream
-    const g = 9.81;
-=======
     let previous_time = performance.now(); // previous time (ms)
 
->>>>>>> Stashed changes
     class circle{
 
         constructor(color, type){
@@ -157,15 +150,6 @@ window.addEventListener('DOMContentLoaded', () => {
             this.draw();
         }
 
-<<<<<<< Updated upstream
-        moveCircle(){ // updates every 
-            this.x += this.vx;
-            this.y += this.vy;
-            this.vx += this.ax;
-            this.vy += this.ay;
-            this.ax -= this.ax * 0.1;
-            this.ay -= this.ay * 0.1;
-=======
         moveCircle(){ // updates every frame
 
             
@@ -202,7 +186,6 @@ window.addEventListener('DOMContentLoaded', () => {
             this.x += this.vx * dt;
             this.y += this.vy * dt;
 
->>>>>>> Stashed changes
             this.bounce();
         }
 
@@ -371,17 +354,6 @@ window.addEventListener('DOMContentLoaded', () => {
             particleArray[i].drawCircleVelocity();
         }
         
-<<<<<<< Updated upstream
-        if(!(collidivec.length == 0)){ // collision line
-            collidivec.forEach(element => {
-                c.beginPath();
-                c.moveTo(element.fhpx, element.fhpy);
-                c.lineTo(element.lhpx, element.lhpy);
-                c.stroke();
-            });
-        }   
-
-=======
         // if(!(collidivec.length == 0)){ // collision line
         //     collidivec.forEach(element => {
         //         c.beginPath();
@@ -391,7 +363,6 @@ window.addEventListener('DOMContentLoaded', () => {
         //     });
         // }   
         //animate();
->>>>>>> Stashed changes
     }
 
     window.setInterval(animate, dt);

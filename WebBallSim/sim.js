@@ -128,10 +128,10 @@ window.addEventListener('DOMContentLoaded', () => {
             this.radius = 50;
             this.x = Math.random() * (tfCanvas.width - this.radius * 2) + this.radius;
             this.y = Math.random() * (tfCanvas.width - this.radius * 2) + this.radius;
-            this.vx = Math.random() * 2 - 1;
-            this.vy = Math.random() * 2 - 1;
-            this.ax = Math.random() * 2 - 1;
-            this.ay = Math.random() * 2 - 1;
+            this.vx = 300 * (Math.random() * 2 - 1);
+            this.vy = 300 * (Math.random() * 2 - 1);
+            this.ax = 300 * (Math.random() * 2 - 1);
+            this.ay = 300 * (Math.random() * 2 - 1);
             this.color = color;
             this.type = type;
             this.elasticity = e;
@@ -265,7 +265,7 @@ window.addEventListener('DOMContentLoaded', () => {
         drawCircleVelocity(){
             c.beginPath();
             c.moveTo(this.x, this.y);
-            c.lineTo(this.x + this.vx * 10, this.y + this.vy * 10);
+            c.lineTo(this.x + this.vx * 1, this.y + this.vy * 1);
             c.stroke();
         }
           

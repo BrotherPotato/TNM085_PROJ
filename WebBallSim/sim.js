@@ -32,7 +32,7 @@ window.addEventListener('DOMContentLoaded', () => {
         mouse.x = mousePos.x * scale;
         mouse.y = mousePos.y * scale;
         mouse.down = e.buttons == 1;
-        console.log(mouse);
+        //console.log(mouse);
         //console.log(particleArray[0]);
         //console.log(e.buttons == 1); 
         if (e.buttons == 0) {
@@ -102,52 +102,38 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function Cricle(x, y, vx, vy, ax, ay, radius, color, type) {
-        this.x = x;
-        this.y = y;
-        this.vx = vx;
-        this.vy = vy;
-        this.ax = ax;
-        this.ay = ay;
-        this.radius = radius;
-        this.color = color;
-        this.type = type;
-        this.elasticity = 0.75;
+    const g = 9.81;
+    class circle{
 
-        this.draw = function () {
+        constructor(color, type){
+            this.radius = 50;
+            this.x = Math.random() * (tfCanvas.width - this.radius * 2) + this.radius;
+            this.y = Math.random() * (tfCanvas.width - this.radius * 2) + this.radius;
+            this.vx = Math.random() * 2 - 1;
+            this.vy = Math.random() * 2 - 1;
+            this.ax = Math.random() * 2 - 1;
+            this.ay = Math.random() * 2 - 1;
+            this.color = color;
+            this.type = type;
+            this.elasticity = 0.75;
+
+        }
+
+        draw(){
+            //console.log("hej");
             c.beginPath();
             c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
 
-            //c.fillStyle = this.color;
-            //console.log(this.color);    
-            //c.fillStyle = "red";
             c.fillStyle = hexToRgb(this.color);
-            //c.fillStyle = this.color;
-
             c.fill();
-
-            //context.strokeStyle = '#003300';
             c.stroke();
         }
 
-        this.update = function () {
-            /*
-            if (Math.abs(mouse.x - this.x) < 20 && Math.abs(mouse.y - this.y) < 20) {
-                if (this.radius < maxRadius) {
-                    this.radius += 1;
-                }
-
-            } else if (this.radius > minRadius) {
-                this.radius -= 1;
-            }
-            */
-            //console.log(this.x);
-
-            //console.log(this.x);
+        update(){
             this.draw();
         }
 
-        this.moveCircle = function () {
+        moveCircle(){ // updates every 
             this.x += this.vx;
             this.y += this.vy;
             this.vx += this.ax;
@@ -157,14 +143,8 @@ window.addEventListener('DOMContentLoaded', () => {
             this.bounce();
         }
 
-        this.bounce = function () {
-            // if (this.x + this.radius >= tfCanvas.width || this.x - this.radius <= 0) {
-            //     this.vx = -this.vx;
-            // }
-            // if (this.y + this.radius >= tfCanvas.height || this.y - this.radius <= 0) {
-            //     this.vy = -this.vy;
-            // }
-
+        bounce(){
+            // Bounds calculations
             if (this.x + this.radius >= tfCanvas.width) {
                 this.x = tfCanvas.width - this.radius;
                 this.vx = -this.vx;
@@ -182,18 +162,24 @@ window.addEventListener('DOMContentLoaded', () => {
                 this.vy = -this.vy;
             }
 
-
-
+            //collision check
             for (var i = 0; i < particleArray.length; i++) {
-                if (this === particleArray[i]) continue;
+                if (this === particleArray[i]) continue; //check if self
                 if (this.checkCollision(particleArray[i])) {
-                    //console.log("collision");
 
+
+                    //console.log("collision");
+                    //deltaX = math.abs(this.x - particleArray[i].x)
+                    //deltaY = math.abs(this.y - particleArray[i].y)
+                    collidivec.push(new collidi(this.x, this.y, particleArray[i].x, particleArray[i].y))
+                    console.log(collidivec.length);
+                    
+                    
                 }
             }
         }
 
-        this.checkCollision = function (otherCircle) {
+        checkCollision(otherCircle){
             // add move ball x and y on hit
             var dx = this.x - otherCircle.x;
             var dy = this.y - otherCircle.y;
@@ -205,11 +191,11 @@ window.addEventListener('DOMContentLoaded', () => {
                 //this.color = "blue";
 
                 //get normalized direction vector
-                normalizedDx = dx / distance;
-                normalizedDy = dy / distance;
+                let normalizedDx = dx / distance;
+                let normalizedDy = dy / distance;
                 //calculate collision point
-                collisionPointMidX = this.x - dx / 2;
-                collisionPointMidY = this.y - dy / 2;
+                let collisionPointMidX = this.x - dx / 2;
+                let collisionPointMidY = this.y - dy / 2;
 
                 //fix new position with collisionPointMid
                 this.x = collisionPointMidX + this.radius * normalizedDx;
@@ -217,19 +203,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 otherCircle.x = collisionPointMidX - otherCircle.radius * normalizedDx;
                 otherCircle.y = collisionPointMidY - otherCircle.radius * normalizedDy;
 
-
-
-                // conservation of momentum
-                // var mass = 1;
-                // var otherMass = 1;
-                // var v1in = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-                // var v2in = Math.sqrt(otherCircle.vx * otherCircle.vx + otherCircle.vy * otherCircle.vy);
-                // var momentum = v1in * mass + v2in * otherMass;
-
-
-
-
-
+                
                 let tempV1 = this.vx * this.elasticity + otherCircle.vx * (1 - otherCircle.elasticity);
                 let tempV2 = this.vy * this.elasticity + otherCircle.vy * (1 - otherCircle.elasticity);
                 this.vx = otherCircle.vx * otherCircle.elasticity + this.vx * (1 - this.elasticity);
@@ -248,13 +222,26 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        this.drawCircleVelocity = function () {
+        drawCircleVelocity(){
             c.beginPath();
             c.moveTo(this.x, this.y);
             c.lineTo(this.x + this.vx * 10, this.y + this.vy * 10);
             c.stroke();
         }
+          
 
+
+
+    } // end of class circle
+
+    var collidivec = [];
+    class collidi{
+        constructor(fhpx, fhpy, lhpx, lhpy){ //first hit pos | last hit pos
+        this.fhpx = fhpx;
+        this.fhpy = fhpy;
+        this.lhpx = lhpx;
+        this.lhpy = lhpy;
+    }
 
     }
 
@@ -278,18 +265,19 @@ window.addEventListener('DOMContentLoaded', () => {
 
     let btn = document.querySelector("#createParticleBtn");
     btn.addEventListener("click", function () {
-        createParticle();
-        createParticle();
-        createParticle();
-        createParticle();
-        createParticle();
-        createParticle();
-        createParticle();
-        createParticle();
-        createParticle();
-        createParticle();
-        createParticle();
-        createParticle();
+
+        for (let i = 0; i < 10; i++) {
+            
+            let c1 = new circle(getNextColor(),1);
+    
+            while(!checkSpawn(c1.x, c1.y)){
+                c1 = new circle(getNextColor(),1);
+            }
+    
+            particleArray.push(c1);
+            
+        }
+        //console.log(new circle(getNextColor(),1));
     });
 
     function getNextColor() {
@@ -308,55 +296,28 @@ window.addEventListener('DOMContentLoaded', () => {
         }
         return true;
     }
-
-
-    function createParticle() {
-        var radius = 50;
-        var x = Math.random() * (tfCanvas.width - radius * 2) + radius;
-        var y = Math.random() * (tfCanvas.height - radius * 2) + radius;
-        while (!checkSpawn(x, y)) {
-            x = Math.random() * (tfCanvas.width - radius * 2) + radius;
-            y = Math.random() * (tfCanvas.height - radius * 2) + radius;
-        }
-
-        let g = 9.81;
-        var vx = Math.random() * 2 - 1;
-        var vy = Math.random() * 2 - 1;
-        var ax = Math.random() * 2 - 1;
-        var ay = Math.random() * 2 - 1;
-
-
-
-        var color = getNextColor();
-        //console.log(color);
-        var type = 'water';
-        particleArray.push(new Cricle(x, y, vx, vy, ax, ay, radius, color, type));
-    }
     
     function animate() {
         //requestAnimationFrame(animate);
         c.clearRect(0, 0, innerWidth * 2, innerHeight * 2);
-
+        //console.log(particleArray);
         c.lineWidth = 1;
         for (var i = 0; i < particleArray.length; i++) {
             particleArray[i].moveCircle();
             particleArray[i].update();
             particleArray[i].drawCircleVelocity();
-
         }
+        
+        if(!(collidivec.length == 0)){ // collision line
+            collidivec.forEach(element => {
+                c.beginPath();
+                c.moveTo(element.fhpx, element.fhpy);
+                c.lineTo(element.lhpx, element.lhpy);
+                c.stroke();
+            });
+        }   
 
     }
-    var color = getNextColor();
-    //particleArray.push(new Cricle(625, 300, -0.5, 0.5, 0, 0, 50, color, "water"));
-    //particleArray.push(new Cricle(300, 600, 2, -2, 0, 0, 50, color, "water"));
-
-    //particleArray.push(new Cricle(500, 500, 1, 1, 0, 0, 10, "#283618", "water"));
-    //particleArray.push(new Cricle(800, 800, -2, -2, 0, 0, 10, "#283618", "water"));
-
-    //particleArray.push(new Cricle(500, 500, 1, 0, 0, 0, 10, color, "water"));
-    //particleArray.push(new Cricle(700, 500, -2, 0, 0, 0, 10, color, "water"));
-    //createParticle()
-    //animate();
 
     window.setInterval(animate, 1000 / FPS);
 

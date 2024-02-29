@@ -1,21 +1,25 @@
-body{
+body {
     background-color: blueviolet;
     overflow: hidden;
 }
-body, canvas {
+
+body,
+canvas {
     border: 0;
     margin: 0;
     padding: 0;
 }
-#simCanvas{
+
+#simCanvas {
     background-color: rgb(255, 255, 255);
     width: 100vw;
     height: 100vh;
     z-index: 1;
 }
-button{
+
+button {
     position: absolute;
     top: 10px;
     left: 10px;
-    
+
 }

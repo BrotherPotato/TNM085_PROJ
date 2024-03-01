@@ -372,22 +372,81 @@ window.addEventListener('DOMContentLoaded', () => {
             var distance = Math.sqrt(dx ** 2 + dy ** 2);
 
             if (distance <= this.radius + otherCircle.radius + 0.001) {
-                normalizedDx = dx / distance;
-                normalizedDy = dy / distance;
-                collisionPointMidX = this.x - dx / 2;
-                collisionPointMidY = this.y - dy / 2;
+                //get normalized direction vector
+                let normalizedDx = dx / distance;
+                let normalizedDy = dy / distance;
+                //calculate collision point
+                let collisionPointMidX = this.x - dx / 2;
+                let collisionPointMidY = this.y - dy / 2;
 
+                //fix new position with collisionPointMid
                 this.x = collisionPointMidX + this.radius * normalizedDx;
                 this.y = collisionPointMidY + this.radius * normalizedDy;
                 otherCircle.x = collisionPointMidX - otherCircle.radius * normalizedDx;
                 otherCircle.y = collisionPointMidY - otherCircle.radius * normalizedDy;
 
-                let tempV1 = this.vx * e + otherCircle.vx * (1 - otherCircle.elasticity);
-                let tempV2 = this.vy * e + otherCircle.vy * (1 - otherCircle.elasticity);
-                this.vx = otherCircle.vx * otherCircle.elasticity + this.vx * (1 - this.elasticity);
-                this.vy = otherCircle.vy * otherCircle.elasticity + this.vy * (1 - this.elasticity);
-                otherCircle.vx = tempV1;
-                otherCircle.vy = tempV2;
+
+                // Phong and Blinn-Phong shading calculations (no force)
+
+                // vector from collision to this circle (Normal) (Normalised)
+                let v1xN = this.x - collisionPointMidX;
+                let v1yN = this.y - collisionPointMidY;
+                v1xN = v1xN / Math.sqrt(v1xN ** 2 + v1yN ** 2);
+                v1yN = v1yN / Math.sqrt(v1xN ** 2 + v1yN ** 2);
+                
+                // vector from collision to input angle (L) (Normalised)
+                let v1xL = -this.vx
+                let v1yL = -this.vy
+                v1xL = v1xL / Math.sqrt(v1xL ** 2 + v1yL ** 2);
+                v1yL = v1yL / Math.sqrt(v1xL ** 2 + v1yL ** 2);
+
+                // calculate the dot product of the two vectors
+                let dotProduct1 = v1xL * v1xN + v1yL * v1yN;
+
+                // calculate the reflection vector
+                let reflectionX = 2 * dotProduct1 * v1xN - v1xL;
+                let reflectionY = 2 * dotProduct1 * v1yN - v1yL;
+
+                // vector from collision to other circle (Normal) (Normalised)
+                let v2xN = otherCircle.x - collisionPointMidX;
+                let v2yN = otherCircle.y - collisionPointMidY;
+                v2xN = v2xN / Math.sqrt(v2xN ** 2 + v2yN ** 2);
+                v2yN = v2yN / Math.sqrt(v2xN ** 2 + v2yN ** 2);
+
+                // vector from collision to input angle (L) (Normalised)
+                let v2xL = -otherCircle.vx
+                let v2yL = -otherCircle.vy
+                v2xL = v2xL / Math.sqrt(v2xL ** 2 + v2yL ** 2);
+                v2yL = v2yL / Math.sqrt(v2xL ** 2 + v2yL ** 2);
+
+                // calculate the dot product of the two vectors
+                let dotProduct2 = v2xL * v2xN + v2yL * v2yN;
+
+                // calculate the reflection vector
+                let reflectionX2 = 2 * dotProduct2 * v2xN - v2xL;
+                let reflectionY2 = 2 * dotProduct2 * v2yN - v2yL;
+
+
+                // calculate momentum and kinetic energy
+                
+
+                // calculate the new velocity
+                this.vx = reflectionX;
+                this.vy = reflectionY;
+                otherCircle.vx = reflectionX2;
+                otherCircle.vy = reflectionY2;
+
+                // calculate velocity with momentum and kinetic energy
+                
+                
+
+
+                // let tempV1 = this.vx * e + otherCircle.vx * (1 - otherCircle.elasticity);
+                // let tempV2 = this.vy * e + otherCircle.vy * (1 - otherCircle.elasticity);
+                // this.vx = otherCircle.vx * otherCircle.elasticity + this.vx * (1 - this.elasticity);
+                // this.vy = otherCircle.vy * otherCircle.elasticity + this.vy * (1 - this.elasticity);
+                // otherCircle.vx = tempV1;
+                // otherCircle.vy = tempV2;
 
                 return true;
             } else {

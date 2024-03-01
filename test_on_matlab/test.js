@@ -380,8 +380,8 @@ window.addEventListener('DOMContentLoaded', () => {
                 let collisionPointMidY = this.y - dy / 2;
 
                 //fix new position with collisionPointMid
-                this.x = collisionPointMidX + this.radius * normalizedDx;
-                this.y = collisionPointMidY + this.radius * normalizedDy;
+                this.x = collisionPointMidX + this.radius * (normalizedDx + 0.01);
+                this.y = collisionPointMidY + this.radius * (normalizedDy + 0.01);
                 otherCircle.x = collisionPointMidX - otherCircle.radius * normalizedDx;
                 otherCircle.y = collisionPointMidY - otherCircle.radius * normalizedDy;
 
@@ -389,67 +389,79 @@ window.addEventListener('DOMContentLoaded', () => {
                 // Phong and Blinn-Phong shading calculations (no force) +
                 // hanterar bara då this är över otherCircle
 
-                // vector from collision to this circle (Normal) (Normalised)
-                // let v1xN = this.x - collisionPointMidX;
-                // let v1yN = this.y - collisionPointMidY;
-                // v1xN = v1xN / Math.sqrt(v1xN ** 2 + v1yN ** 2);
-                // v1yN = v1yN / Math.sqrt(v1xN ** 2 + v1yN ** 2);
+                //vector from collision to this circle (Normal) (Normalised)
+                let v1xN = this.x - collisionPointMidX;
+                let v1yN = this.y - collisionPointMidY;
+                v1xN = v1xN / Math.sqrt(v1xN ** 2 + v1yN ** 2);
+                v1yN = v1yN / Math.sqrt(v1xN ** 2 + v1yN ** 2);
                 
-                // // vector from collision to input angle (L) (Normalised)
-                // let v1xL = -this.vx
-                // let v1yL = -this.vy
-                // v1xL = v1xL / Math.sqrt(v1xL ** 2 + v1yL ** 2);
-                // v1yL = v1yL / Math.sqrt(v1xL ** 2 + v1yL ** 2);
+                // vector from collision to input angle (L) (Normalised)
+                let v1xL = -this.vx
+                let v1yL = -this.vy
+                v1xL = v1xL / Math.sqrt(v1xL ** 2 + v1yL ** 2);
+                v1yL = v1yL / Math.sqrt(v1xL ** 2 + v1yL ** 2);
 
-                // // calculate the dot product of the two vectors
-                // let dotProduct1 = v1xL * v1xN + v1yL * v1yN;
+                // calculate the dot product of the two vectors
+                let dotProduct1 = v1xL * v1xN + v1yL * v1yN;
+                //dotProduct1 = Math.abs(dotProduct1);
+                //console.log(dotProduct1);
+                // calculate the reflection vector
+                let reflectionX1 = 2 * dotProduct1 * v1xN - v1xL;
+                let reflectionY1 = 2 * dotProduct1 * v1yN - v1yL;
 
-                // // calculate the reflection vector
-                // let reflectionX = 2 * dotProduct1 * v1xN - v1xL;
-                // let reflectionY = 2 * dotProduct1 * v1yN - v1yL;
+                // vector from collision to other circle (Normal) (Normalised)
+                let v2xN = otherCircle.x - collisionPointMidX;
+                let v2yN = otherCircle.y - collisionPointMidY;
+                v2xN = v2xN / Math.sqrt(v2xN ** 2 + v2yN ** 2);
+                v2yN = v2yN / Math.sqrt(v2xN ** 2 + v2yN ** 2);
 
-                // // vector from collision to other circle (Normal) (Normalised)
-                // let v2xN = otherCircle.x - collisionPointMidX;
-                // let v2yN = otherCircle.y - collisionPointMidY;
-                // v2xN = v2xN / Math.sqrt(v2xN ** 2 + v2yN ** 2);
-                // v2yN = v2yN / Math.sqrt(v2xN ** 2 + v2yN ** 2);
+                // vector from collision to input angle (L) (Normalised)
+                let v2xL = -otherCircle.vx
+                let v2yL = -otherCircle.vy
+                v2xL = v2xL / Math.sqrt(v2xL ** 2 + v2yL ** 2);
+                v2yL = v2yL / Math.sqrt(v2xL ** 2 + v2yL ** 2);
 
-                // // vector from collision to input angle (L) (Normalised)
-                // let v2xL = -otherCircle.vx
-                // let v2yL = -otherCircle.vy
-                // v2xL = v2xL / Math.sqrt(v2xL ** 2 + v2yL ** 2);
-                // v2yL = v2yL / Math.sqrt(v2xL ** 2 + v2yL ** 2);
+                // calculate the dot product of the two vectors
+                let dotProduct2 = v2xL * v2xN + v2yL * v2yN;
+                //dotProduct2 = Math.abs(dotProduct2);
+                // calculate the reflection vector
+                let reflectionX2 = 2 * dotProduct2 * v2xN - v2xL;
+                let reflectionY2 = 2 * dotProduct2 * v2yN - v2yL;
 
-                // // calculate the dot product of the two vectors
-                // let dotProduct2 = v2xL * v2xN + v2yL * v2yN;
+                // normalise the reflection vectors
+                let reflectionSize = Math.sqrt(reflectionX1 ** 2 + reflectionY1 ** 2);
+                reflectionX1 = reflectionX1 / reflectionSize;
+                reflectionY1 = reflectionY1 / reflectionSize;
 
-                // // calculate the reflection vector
-                // let reflectionX2 = 2 * dotProduct2 * v2xN - v2xL;
-                // let reflectionY2 = 2 * dotProduct2 * v2yN - v2yL;
+                let reflectionSize2 = Math.sqrt(reflectionX2 ** 2 + reflectionY2 ** 2);
+                reflectionX2 = reflectionX2 / reflectionSize2;
+                reflectionY2 = reflectionY2 / reflectionSize2;
 
 
-                // // size of previous velocity
-                // let v1Size = Math.sqrt(this.vx ** 2 + this.vy ** 2);
-                // let v2Size = Math.sqrt(otherCircle.vx ** 2 + otherCircle.vy ** 2);
-                
+                // size of previous velocity
+                let v1Size = Math.sqrt(this.vx ** 2 + this.vy ** 2);
+                let v2Size = Math.sqrt(otherCircle.vx ** 2 + otherCircle.vy ** 2);
 
-                // // calculate the new velocity
-                // this.vx = reflectionX * v1Size;
-                // this.vy = reflectionY * v1Size;
-                // otherCircle.vx = reflectionX2 * v2Size;
-                // otherCircle.vy = reflectionY2 * v2Size;
+                // calculate the new velocity
+                this.vx = reflectionX1 * v1Size;
+                this.vy = reflectionY1 * v1Size;
+                otherCircle.vx = reflectionX2 * v2Size;
+                otherCircle.vy = reflectionY2 * v2Size;
+
+
+
 
                 // calculate velocity with momentum and kinetic energy
                 
                 
 
 
-                let tempV1 = this.vx * e + otherCircle.vx * (1 - otherCircle.elasticity);
-                let tempV2 = this.vy * e + otherCircle.vy * (1 - otherCircle.elasticity);
-                this.vx = otherCircle.vx * otherCircle.elasticity + this.vx * (1 - this.elasticity);
-                this.vy = otherCircle.vy * otherCircle.elasticity + this.vy * (1 - this.elasticity);
-                otherCircle.vx = tempV1;
-                otherCircle.vy = tempV2;
+                // let tempV1 = this.vx * e + otherCircle.vx * (1 - otherCircle.elasticity);
+                // let tempV2 = this.vy * e + otherCircle.vy * (1 - otherCircle.elasticity);
+                // this.vx = otherCircle.vx * otherCircle.elasticity + this.vx * (1 - this.elasticity);
+                // this.vy = otherCircle.vy * otherCircle.elasticity + this.vy * (1 - this.elasticity);
+                // otherCircle.vx = tempV1;
+                // otherCircle.vy = tempV2;
 
                 return true;
             } else {
@@ -560,12 +572,12 @@ window.addEventListener('DOMContentLoaded', () => {
         }
 
     }
-    //var color = getNextColor();
-    //particleArray.push(new Cricle(625, 300, -0.5, 0.5, 0, 0, 50, color, "water"));
-    //particleArray.push(new Cricle(300, 600, 2, -2, 0, 0, 50, color, "water"));
+    var color = getNextColor();
+    particleArray.push(new Cricle(625, 300, -0.5, 0.5, 0, 0, 50, color, "water"));
+    particleArray.push(new Cricle(300, 600, 2, -2, 0, 0, 50, color, "water"));
 
-    //particleArray.push(new Cricle(500, 500, 1, 1, 0, 0, 10, "#283618", "water"));
-    //particleArray.push(new Cricle(800, 800, -2, -2, 0, 0, 10, "#283618", "water"));
+    particleArray.push(new Cricle(500, 500, 1, 1, 0, 0, 50, "#283618", "water"));
+    particleArray.push(new Cricle(800, 800, -2, -2, 0, 0, 50, "#283618", "water"));
 
     //particleArray.push(new Cricle(500, 500, 1, 0, 0, 0, 10, color, "water"));
     //particleArray.push(new Cricle(700, 500, -2, 0, 0, 0, 10, color, "water"));

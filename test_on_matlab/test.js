@@ -307,10 +307,11 @@ window.addEventListener('DOMContentLoaded', () => {
 
             for (var i = 0; i < particleArray.length; i++) {
                 if (this === particleArray[i]) continue;
-                if (this.checkCollision(particleArray[i])) {
+                // if (this.checkCollision(particleArray[i])) {
 
+                // }
 
-                }
+                this.checkCollision(particleArray[i])
             }
         }
 
@@ -371,7 +372,9 @@ window.addEventListener('DOMContentLoaded', () => {
             var dy = this.y - otherCircle.y;
             var distance = Math.sqrt(dx ** 2 + dy ** 2);
 
-            if (distance <= this.radius + otherCircle.radius + 0.001) {
+            if (distance <= this.radius + otherCircle.radius) {
+
+                
                 //get normalized direction vector
                 let normalizedDx = dx / distance;
                 let normalizedDy = dy / distance;
@@ -380,10 +383,10 @@ window.addEventListener('DOMContentLoaded', () => {
                 let collisionPointMidY = this.y - dy / 2;
 
                 //fix new position with collisionPointMid
-                this.x = collisionPointMidX + this.radius * (normalizedDx + 0.01);
-                this.y = collisionPointMidY + this.radius * (normalizedDy + 0.01);
-                otherCircle.x = collisionPointMidX - otherCircle.radius * normalizedDx;
-                otherCircle.y = collisionPointMidY - otherCircle.radius * normalizedDy;
+                this.x = collisionPointMidX + (this.radius + 0.5) * normalizedDx;
+                this.y = collisionPointMidY + (this.radius + 0.5) * normalizedDy;
+                otherCircle.x = collisionPointMidX - (otherCircle.radius + 0.5) * normalizedDx;
+                otherCircle.y = collisionPointMidY - (otherCircle.radius + 0.5) * normalizedDy;
 
 
                 // Phong and Blinn-Phong shading calculations (no force) +
@@ -443,10 +446,12 @@ window.addEventListener('DOMContentLoaded', () => {
                 let v2Size = Math.sqrt(otherCircle.vx ** 2 + otherCircle.vy ** 2);
 
                 // calculate the new velocity
-                this.vx = reflectionX1 * v1Size;
-                this.vy = reflectionY1 * v1Size;
-                otherCircle.vx = reflectionX2 * v2Size;
-                otherCircle.vy = reflectionY2 * v2Size;
+                let oldv1x = this.vx;
+                let oldv1y = this.vy;
+                this.vx = reflectionX1 * v1Size * this.elasticity + otherCircle.vx * (1 - otherCircle.elasticity);
+                this.vy = reflectionY1 * v1Size * this.elasticity + otherCircle.vx * (1 - otherCircle.elasticity);
+                otherCircle.vx = reflectionX2 * v2Size * otherCircle.elasticity + oldv1x * (1 - this.elasticity);
+                otherCircle.vy = reflectionY2 * v2Size * otherCircle.elasticity + oldv1y * (1 - this.elasticity);
 
 
 

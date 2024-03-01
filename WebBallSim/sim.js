@@ -176,14 +176,12 @@ window.addEventListener('DOMContentLoaded', () => {
             v_mag_x = this.vx ** 2;
             v_mag_y = this.vy ** 2;
 
-            let v_mag = Math.sqrt(this.vx ** 2 + this.vy ** 2);
-
             //scale the radius
             scaled_r = this.radius * 0.001;
 
             //compute the drag
-            F_drag_x = -0.5 * rho * (Math.PI * (scaled_r ** 2)) * C * v_mag;
-            F_drag_y = -0.5 * rho * (Math.PI * (scaled_r ** 2)) * C * v_mag;
+            F_drag_x = -0.5 * rho * (Math.PI * (scaled_r ** 2)) * C * v_mag_x;
+            F_drag_y = -0.5 * rho * (Math.PI * (scaled_r ** 2)) * C * v_mag_y;
 
             //compute the magnus force
             F_magnus_x = this.calculateMagnus(this.vx, scaled_r);

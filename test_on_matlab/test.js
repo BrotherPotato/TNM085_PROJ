@@ -200,6 +200,12 @@ window.addEventListener('DOMContentLoaded', () => {
             return F_friction;
         }
 
+        this.calculateMagnus = function(vel, r) { //compute magnus effect force F_M
+            const c_A = 0.1; //the magnus coefficient
+            const F_M = c_A * (rho / 2) * (vel ** 2) * (Math.PI * (r ** 2));
+            return F_M;
+        }
+
         this.moveCircle = function () {
             // Calculate drag force
             let F_drag_x, F_drag_y, v_mag_x, v_mag_y, scaled_r;
@@ -273,8 +279,6 @@ window.addEventListener('DOMContentLoaded', () => {
             var distance = Math.sqrt(dx ** 2 + dy ** 2);
 
             if (distance <= this.radius + otherCircle.radius) {
-
-                
                 //get normalized direction vector (Normal) from this to otherCircle
                 let normalizedDx = dx / distance;
                 let normalizedDy = dy / distance;

@@ -131,11 +131,12 @@ window.addEventListener('DOMContentLoaded', () => {
             this.y = Math.random() * (tfCanvas.height - this.radius * 2) + this.radius;
             this.vx = (Math.random() * 2 - 1);
             this.vy = (Math.random() * 2 - 1);
-            this.ax = (Math.random() * 2 - 1);
-            this.ay = (Math.random() * 2 - 1);
+            this.ax = 0;
+            this.ay = 0;
             this.color = color;
             this.type = type;
-            this.elasticity = e;
+            this.eor = e;
+            this.mass = m;
 
         }
 
@@ -184,9 +185,11 @@ window.addEventListener('DOMContentLoaded', () => {
             F_drag_x = -0.5 * rho * (Math.PI * (scaled_r ** 2)) * C * v_mag_x;
             F_drag_y = -0.5 * rho * (Math.PI * (scaled_r ** 2)) * C * v_mag_y;
 
+
             //compute the magnus force
             F_magnus_x = this.calculateMagnus(this.vx, scaled_r);
             F_magnus_y = this.calculateMagnus(this.vy, scaled_r);
+
 
             //compute friction on floor, only in x-direction
             if (this.y >= tfCanvas.height - this.radius) {
@@ -197,10 +200,9 @@ window.addEventListener('DOMContentLoaded', () => {
             }
 
             //apply drag- and magnus force 
-            this.ax = (F_drag_x + F_magnus_x) / m;
-            this.ay = ((F_drag_y + F_magnus_y) / m) + g;
-            //}
-
+            this.ax = ((F_drag_x + F_magnus_x) / m);
+            this.ay = (((F_drag_y + F_magnus_y) / m) + g);
+            
             // Update velocity
             this.vx += this.ax * h;
             this.vy += this.ay * h;
@@ -216,19 +218,15 @@ window.addEventListener('DOMContentLoaded', () => {
             // Bounds calculations
             if (this.x + this.radius >= tfCanvas.width) {
                 this.x = tfCanvas.width - this.radius;
-                this.vx *= -this.elasticity;
             }
             if (this.x - this.radius <= 0) {
                 this.x = this.radius;
-                this.vx *= -this.elasticity;
             }
             if (this.y + this.radius >= tfCanvas.height) {
                 this.y = tfCanvas.height - this.radius;
-                this.vy *= -this.elasticity;;
             }
             if (this.y - this.radius <= 0) {
                 this.y = this.radius;
-                this.vy *= -this.elasticity;;
             }
 
             //collision check
@@ -256,8 +254,10 @@ window.addEventListener('DOMContentLoaded', () => {
             var distance = Math.sqrt(dx * dx + dy * dy);
 
 
-            if (distance <= this.radius + otherCircle.radius + 0.001) {
-                //get normalized direction vector
+            if (distance <= this.radius + otherCircle.radius) {
+
+                
+                //get normalized direction vector (Normal) from this to otherCircle
                 let normalizedDx = dx / distance;
                 let normalizedDy = dy / distance;
                 //calculate collision point
@@ -265,90 +265,101 @@ window.addEventListener('DOMContentLoaded', () => {
                 let collisionPointMidY = this.y - dy / 2;
 
                 //fix new position with collisionPointMid
-                this.x = collisionPointMidX + (this.radius + 0.5) * normalizedDx;
-                this.y = collisionPointMidY + (this.radius + 0.5) * normalizedDy;
-                otherCircle.x = collisionPointMidX - (otherCircle.radius + 0.5) * normalizedDx;
-                otherCircle.y = collisionPointMidY - (otherCircle.radius + 0.5) * normalizedDy;
+                this.x = collisionPointMidX + (this.radius * 1.02) * normalizedDx;
+                this.y = collisionPointMidY + (this.radius * 1.02) * normalizedDy;
+                otherCircle.x = collisionPointMidX - (otherCircle.radius * 1.02) * normalizedDx;
+                otherCircle.y = collisionPointMidY - (otherCircle.radius * 1.02) * normalizedDy;
+
+                //get tangetial vector to normal vector (90 degrees rotation counterclowise)
+                let tangentX = -normalizedDy;
+                let tangentY = normalizedDx;
+
+                // get velocity in normal and tangent direction
+                let thisInitialVNormal = this.vx * normalizedDx + this.vy * normalizedDy;
+                let thisInitialVTangent = this.vx * tangentX + this.vy * tangentY;
+                let otherInitialVNormal = otherCircle.vx * normalizedDx + otherCircle.vy * normalizedDy;
+                let otherInitialVTangent = otherCircle.vx * tangentX + otherCircle.vy * tangentY;
+
+                // tangent velocities remain the same
+                let thisFinalVTangent = thisInitialVTangent;
+                let otherFinalVTangent = otherInitialVTangent;
+
+                // calculate the velocities in the normal direction after collision
+                let thisFinalVNormal = this.mass * thisInitialVNormal + otherCircle.mass * otherInitialVNormal + otherCircle.mass * otherCircle.eor * (otherInitialVNormal - thisInitialVNormal);
+                let otherFinalVNormal = this.mass * thisInitialVNormal + otherCircle.mass * otherInitialVNormal + this.mass * this.eor * (thisInitialVNormal - otherInitialVNormal);
+
+                // set new velocities
+                this.vx = (thisFinalVNormal * normalizedDx + thisFinalVTangent * tangentX);
+                this.vy = (thisFinalVNormal * normalizedDy + thisFinalVTangent * tangentY);
+                otherCircle.vx = (otherFinalVNormal * normalizedDx + otherFinalVTangent * tangentX);
+                otherCircle.vy = (otherFinalVNormal * normalizedDy + otherFinalVTangent * tangentY);
+
 
 
                 // Phong and Blinn-Phong shading calculations (no force) +
                 // hanterar bara då this är över otherCircle
 
-                //vector from collision to this circle (Normal) (Normalised)
-                let v1xN = this.x - collisionPointMidX;
-                let v1yN = this.y - collisionPointMidY;
-                v1xN = v1xN / Math.sqrt(v1xN ** 2 + v1yN ** 2);
-                v1yN = v1yN / Math.sqrt(v1xN ** 2 + v1yN ** 2);
+                // //vector from collision to this circle (Normal) (Normalised)
+                // let v1xN = this.x - collisionPointMidX;
+                // let v1yN = this.y - collisionPointMidY;
+                // v1xN = v1xN / Math.sqrt(v1xN ** 2 + v1yN ** 2);
+                // v1yN = v1yN / Math.sqrt(v1xN ** 2 + v1yN ** 2);
                 
-                // vector from collision to input angle (L) (Normalised)
-                let v1xL = -this.vx
-                let v1yL = -this.vy
-                v1xL = v1xL / Math.sqrt(v1xL ** 2 + v1yL ** 2);
-                v1yL = v1yL / Math.sqrt(v1xL ** 2 + v1yL ** 2);
+                // // vector from collision to input angle (L) (Normalised)
+                // let v1xL = -this.vx
+                // let v1yL = -this.vy
+                // v1xL = v1xL / Math.sqrt(v1xL ** 2 + v1yL ** 2);
+                // v1yL = v1yL / Math.sqrt(v1xL ** 2 + v1yL ** 2);
 
-                // calculate the dot product of the two vectors
-                let dotProduct1 = v1xL * v1xN + v1yL * v1yN;
-                //dotProduct1 = Math.abs(dotProduct1);
-                //console.log(dotProduct1);
-                // calculate the reflection vector
-                let reflectionX1 = 2 * dotProduct1 * v1xN - v1xL;
-                let reflectionY1 = 2 * dotProduct1 * v1yN - v1yL;
+                // // calculate the dot product of the two vectors
+                // let dotProduct1 = v1xL * v1xN + v1yL * v1yN;
+                // //dotProduct1 = Math.abs(dotProduct1);
+                // //console.log(dotProduct1);
+                // // calculate the reflection vector
+                // let reflectionX1 = 2 * dotProduct1 * v1xN - v1xL;
+                // let reflectionY1 = 2 * dotProduct1 * v1yN - v1yL;
 
-                // vector from collision to other circle (Normal) (Normalised)
-                let v2xN = otherCircle.x - collisionPointMidX;
-                let v2yN = otherCircle.y - collisionPointMidY;
-                v2xN = v2xN / Math.sqrt(v2xN ** 2 + v2yN ** 2);
-                v2yN = v2yN / Math.sqrt(v2xN ** 2 + v2yN ** 2);
+                // // vector from collision to other circle (Normal) (Normalised)
+                // let v2xN = otherCircle.x - collisionPointMidX;
+                // let v2yN = otherCircle.y - collisionPointMidY;
+                // v2xN = v2xN / Math.sqrt(v2xN ** 2 + v2yN ** 2);
+                // v2yN = v2yN / Math.sqrt(v2xN ** 2 + v2yN ** 2);
 
-                // vector from collision to input angle (L) (Normalised)
-                let v2xL = -otherCircle.vx
-                let v2yL = -otherCircle.vy
-                v2xL = v2xL / Math.sqrt(v2xL ** 2 + v2yL ** 2);
-                v2yL = v2yL / Math.sqrt(v2xL ** 2 + v2yL ** 2);
+                // // vector from collision to input angle (L) (Normalised)
+                // let v2xL = -otherCircle.vx
+                // let v2yL = -otherCircle.vy
+                // v2xL = v2xL / Math.sqrt(v2xL ** 2 + v2yL ** 2);
+                // v2yL = v2yL / Math.sqrt(v2xL ** 2 + v2yL ** 2);
 
-                // calculate the dot product of the two vectors
-                let dotProduct2 = v2xL * v2xN + v2yL * v2yN;
-                //dotProduct2 = Math.abs(dotProduct2);
-                // calculate the reflection vector
-                let reflectionX2 = 2 * dotProduct2 * v2xN - v2xL;
-                let reflectionY2 = 2 * dotProduct2 * v2yN - v2yL;
+                // // calculate the dot product of the two vectors
+                // let dotProduct2 = v2xL * v2xN + v2yL * v2yN;
+                // //dotProduct2 = Math.abs(dotProduct2);
+                // // calculate the reflection vector
+                // let reflectionX2 = 2 * dotProduct2 * v2xN - v2xL;
+                // let reflectionY2 = 2 * dotProduct2 * v2yN - v2yL;
 
-                // normalise the reflection vectors
-                let reflectionSize = Math.sqrt(reflectionX1 ** 2 + reflectionY1 ** 2);
-                reflectionX1 = reflectionX1 / reflectionSize;
-                reflectionY1 = reflectionY1 / reflectionSize;
+                // // normalise the reflection vectors
+                // let reflectionSize = Math.sqrt(reflectionX1 ** 2 + reflectionY1 ** 2);
+                // reflectionX1 = reflectionX1 / reflectionSize;
+                // reflectionY1 = reflectionY1 / reflectionSize;
 
-                let reflectionSize2 = Math.sqrt(reflectionX2 ** 2 + reflectionY2 ** 2);
-                reflectionX2 = reflectionX2 / reflectionSize2;
-                reflectionY2 = reflectionY2 / reflectionSize2;
-
-
-                // size of previous velocity
-                let v1Size = Math.sqrt(this.vx ** 2 + this.vy ** 2);
-                let v2Size = Math.sqrt(otherCircle.vx ** 2 + otherCircle.vy ** 2);
-
-                // calculate the new velocity
-                let oldv1x = this.vx;
-                let oldv1y = this.vy;
-                this.vx = reflectionX1 * v1Size * this.elasticity + otherCircle.vx * (1 - otherCircle.elasticity) * 0.8;
-                this.vy = reflectionY1 * v1Size * this.elasticity + otherCircle.vx * (1 - otherCircle.elasticity) * 0.8;
-                otherCircle.vx = reflectionX2 * v2Size * otherCircle.elasticity + oldv1x * (1 - this.elasticity) * 0.8;
-                otherCircle.vy = reflectionY2 * v2Size * otherCircle.elasticity + oldv1y * (1 - this.elasticity) * 0.8;
-                
-                // //get normalized direction vector
-                // let normalizedDx = dx / distance;
-                // let normalizedDy = dy / distance;
-                // //calculate collision point
-                // let collisionPointMidX = this.x - dx / 2;
-                // let collisionPointMidY = this.y - dy / 2;
-
-                // //fix new position with collisionPointMid
-                // this.x = collisionPointMidX + this.radius * normalizedDx;
-                // this.y = collisionPointMidY + this.radius * normalizedDy;
-                // otherCircle.x = collisionPointMidX - otherCircle.radius * normalizedDx;
-                // otherCircle.y = collisionPointMidY - otherCircle.radius * normalizedDy;
+                // let reflectionSize2 = Math.sqrt(reflectionX2 ** 2 + reflectionY2 ** 2);
+                // reflectionX2 = reflectionX2 / reflectionSize2;
+                // reflectionY2 = reflectionY2 / reflectionSize2;
 
 
+                // // size of previous velocity
+                // let v1Size = Math.sqrt(this.vx ** 2 + this.vy ** 2);
+                // let v2Size = Math.sqrt(otherCircle.vx ** 2 + otherCircle.vy ** 2);
+
+                // // calculate the new velocity
+                // let oldv1x = this.vx;
+                // let oldv1y = this.vy;
+                // this.vx = reflectionX1 * v1Size * this.elasticity + otherCircle.vx * (1 - otherCircle.elasticity) * 0.8;
+                // this.vy = reflectionY1 * v1Size * this.elasticity + otherCircle.vx * (1 - otherCircle.elasticity) * 0.8;
+                // otherCircle.vx = reflectionX2 * v2Size * otherCircle.elasticity + oldv1x * (1 - this.elasticity) * 0.8;
+                // otherCircle.vy = reflectionY2 * v2Size * otherCircle.elasticity + oldv1y * (1 - this.elasticity) * 0.8;
+        
                 // let tempV1 = this.vx * this.elasticity + otherCircle.vx * (1 - otherCircle.elasticity);
                 // let tempV2 = this.vy * this.elasticity + otherCircle.vy * (1 - otherCircle.elasticity);
                 // this.vx = otherCircle.vx * otherCircle.elasticity + this.vx * (1 - this.elasticity);
@@ -370,17 +381,6 @@ window.addEventListener('DOMContentLoaded', () => {
         }
 
     } // end of class circle
-
-    var collidivec = [];
-    class collidi {
-        constructor(fhpx, fhpy, lhpx, lhpy) { //first hit pos | last hit pos
-            this.fhpx = fhpx;
-            this.fhpy = fhpy;
-            this.lhpx = lhpx;
-            this.lhpy = lhpy;
-        }
-
-    }
 
     var particleArray = [];
     var arrayOfRainbowColors = [
@@ -408,7 +408,6 @@ window.addEventListener('DOMContentLoaded', () => {
             var c1 = new circle(getNextColor(), 1);
             //console.log(c1.x);
             while (!checkSpawn(c1)) {
-                c1 = null;
                 c1 = new circle(getNextColor(), 1);
                 //console.log(1, c1.x);
             }
@@ -438,12 +437,6 @@ window.addEventListener('DOMContentLoaded', () => {
                 //break;
             } 
 
-
-
-            // if (particle.x + particle.radius + c.radius > c.x && particle.x - particle.radius - c.radius < c.x
-            //     && particle.y + (particle.radius * 2) > c.y && particle.y - (particle.radius * 2) < c.y) {
-            //     return false;
-            // }
         }
         return bool;
     }
@@ -456,16 +449,7 @@ window.addEventListener('DOMContentLoaded', () => {
             particleArray[i].moveCircle();
             particleArray[i].update();
             particleArray[i].drawCircleVelocity();
-        }
-
-        // if(!(collidivec.length == 0)){ // collision line
-        //     collidivec.forEach(element => {
-        //         c.beginPath();
-        //         c.moveTo(element.fhpx, element.fhpy);
-        //         c.lineTo(element.lhpx, element.lhpy);
-        //         c.stroke();
-        //     });
-        // }   
+        }  
 
     }
 

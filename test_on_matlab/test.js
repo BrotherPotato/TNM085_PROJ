@@ -171,6 +171,7 @@ window.addEventListener('DOMContentLoaded', () => {
         this.color = color;
         this.type = type;
         this.eor = e;
+        this.eorWall = 0.9;
         this.mass = m;
 
         this.draw = function () {
@@ -190,42 +191,19 @@ window.addEventListener('DOMContentLoaded', () => {
         }
 
         this.update = function () {
-            /*
-            if (Math.abs(mouse.x - this.x) < 20 && Math.abs(mouse.y - this.y) < 20) {
-                if (this.radius < maxRadius) {
-                    this.radius += 1;
-                }
-
-            } else if (this.radius > minRadius) {
-                this.radius -= 1;
-            }
-            */
-            //console.log(this.x);
-
-            //console.log(this.x);
             this.draw();
         }
 
-        /* this.moveCircle = function () {
-            this.x += this.vx;
-            this.y += this.vy;
-            this.vx += this.ax;
-            this.vy += this.ay;
-            this.ax -= this.ax * 0.1;
-            this.ay -= this.ay * 0.1;
-           
-
-
-            this.bounce();
-        } */
+        this.getContainerFriction = function(vel){
+            const my = 0.5; //the friction coefficient
+            const F_friction = -my * vel;
+            return F_friction;
+        }
 
         this.moveCircle = function () {
             // Calculate drag force
             let F_drag_x, F_drag_y, v_mag_x, v_mag_y, scaled_r;
-            /*  if (this.y <= 0) {
-                 this.vx *= e;
-                 this.vy *= -e;
-             } else { */
+
             v_mag_x = this.vx ** 2;
             v_mag_y = this.vy ** 2; 
 
@@ -235,8 +213,8 @@ window.addEventListener('DOMContentLoaded', () => {
             F_drag_x = -0.5 * rho * (Math.PI * (scaled_r ** 2)) * C * this.vx * v_mag_x;
             F_drag_y = -0.5 * rho * (Math.PI * (scaled_r ** 2)) * C * this.vy * v_mag_y;
 
-            this.ax = (F_drag_x / m);
-            this.ay = (g + (F_drag_y / m));
+            this.ax += (F_drag_x / m);
+            this.ay += (g + (F_drag_y / m));
             // }
 
             // Update velocity
@@ -247,63 +225,36 @@ window.addEventListener('DOMContentLoaded', () => {
             this.x += this.vx * h;
             this.y += this.vy * h;
 
+            this.ax = 0;
+            this.ay = 0;
+
             this.bounce();
         }
 
         this.bounce = function () {
-            /*  // if (this.x + this.radius >= tfCanvas.width || this.x - this.radius <= 0) {
-             //     this.vx = -this.vx;
-             // }
-             // if (this.y + this.radius >= tfCanvas.height || this.y - this.radius <= 0) {
-             //     this.vy = -this.vy;
-             // }
- 
-             if (this.x + this.radius >= tfCanvas.width) {
-                 this.x = tfCanvas.width - this.radius;
-                 this.vx = -this.vx;
-             }
-             if (this.x - this.radius <= 0) {
-                 this.x = this.radius;
-                 this.vx = -this.vx;
-             }
-             if (this.y + this.radius >= tfCanvas.height) {
-                 this.y = tfCanvas.height - this.radius;
-                 this.vy = -this.vy;
-             }
-             if (this.y - this.radius <= 0) {
-                 this.y = this.radius;
-                 this.vy = -this.vy;
-             }
- 
- 
- 
-             for (var i = 0; i < particleArray.length; i++) {
-                 if (this === particleArray[i]) continue;
-                 if (this.checkCollision(particleArray[i])) {
-                     //console.log("collision");
- 
-                 }
-             } */
-
-            if (this.x + this.radius >= tfCanvas.width) {
+            if (this.x + this.radius >= tfCanvas.width) { // höger
                 this.x = tfCanvas.width - this.radius;
-                this.vx = -this.vx;
-                this.vy = this.vy * 0.99;
+                this.vx = -this.vx * this.eorWall;
+                let friction = this.getContainerFriction(this.vy);
+                this.ay = friction/this.mass;
             }
-            if (this.x - this.radius <= 0) {
+            if (this.x - this.radius <= 0) { // vänster
                 this.x = this.radius;
-                this.vx = -this.vx;
-                this.vy = this.vy * 0.99;
+                this.vx = -this.vx * this.eorWall;
+                let friction = this.getContainerFriction(this.vy);
+                this.ay = friction/this.mass;
             }
-            if (this.y + this.radius >= tfCanvas.height) {
+            if (this.y + this.radius >= tfCanvas.height) { // botten
                 this.y = tfCanvas.height - this.radius;
-                this.vy = -this.vy;
-                this.vx = this.vx * 0.99;
+                this.vy = -this.vy * this.eorWall;
+                let friction = this.getContainerFriction(this.vx);
+                this.ax = friction/this.mass;
             }
-            if (this.y - this.radius <= 0) {
+            if (this.y - this.radius <= 0) { // topp
                 this.y = this.radius;
-                this.vy = -this.vy;
-                this.vx = this.vx * 0.99;
+                this.vy = -this.vy * this.eorWall;
+                let friction = this.getContainerFriction(this.vx);
+                this.ax = friction/this.mass;
             }
 
             for (var i = 0; i < particleArray.length; i++) {
@@ -317,58 +268,6 @@ window.addEventListener('DOMContentLoaded', () => {
         }
 
         this.checkCollision = function (otherCircle) {
-            /*  // add move ball x and y on hit
-             var dx = this.x - otherCircle.x;
-             var dy = this.y - otherCircle.y;
-             var distance = Math.sqrt(dx * dx + dy * dy);
- 
- 
-             if (distance <= this.radius + otherCircle.radius + 0.001) {
-                 //otherCircle.color = "red";
-                 //this.color = "blue";
- 
-                 //get normalized direction vector
-                 normalizedDx = dx / distance;
-                 normalizedDy = dy / distance;
-                 //calculate collision point
-                 collisionPointMidX = this.x - dx / 2;
-                 collisionPointMidY = this.y - dy / 2;
- 
-                 //fix new position with collisionPointMid
-                 this.x = collisionPointMidX + this.radius * normalizedDx;
-                 this.y = collisionPointMidY + this.radius * normalizedDy;
-                 otherCircle.x = collisionPointMidX - otherCircle.radius * normalizedDx;
-                 otherCircle.y = collisionPointMidY - otherCircle.radius * normalizedDy;
- 
- 
- 
-                 // conservation of momentum
-                 // var mass = 1;
-                 // var otherMass = 1;
-                 // var v1in = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-                 // var v2in = Math.sqrt(otherCircle.vx * otherCircle.vx + otherCircle.vy * otherCircle.vy);
-                 // var momentum = v1in * mass + v2in * otherMass;
- 
- 
- 
- 
- 
-                 let tempV1 = this.vx * this.elasticity + otherCircle.vx * (1 - otherCircle.elasticity);
-                 let tempV2 = this.vy * this.elasticity + otherCircle.vy * (1 - otherCircle.elasticity);
-                 this.vx = otherCircle.vx * otherCircle.elasticity + this.vx * (1 - this.elasticity);
-                 this.vy = otherCircle.vy * otherCircle.elasticity + this.vy * (1 - this.elasticity);
-                 otherCircle.vx = tempV1;
-                 otherCircle.vy = tempV2;
-                 // console.log(this.vx);
-                 // console.log(this.vy);
-                 // console.log(otherCircle.vx);
-                 // console.log(otherCircle.vy);
- 
- 
-                 return true;
-             } else {
-                 return false;
-             } */
             var dx = this.x - otherCircle.x;
             var dy = this.y - otherCircle.y;
             var distance = Math.sqrt(dx ** 2 + dy ** 2);
@@ -414,87 +313,6 @@ window.addEventListener('DOMContentLoaded', () => {
                 this.vy = (thisFinalVNormal * normalizedDy + thisFinalVTangent * tangentY);
                 otherCircle.vx = (otherFinalVNormal * normalizedDx + otherFinalVTangent * tangentX);
                 otherCircle.vy = (otherFinalVNormal * normalizedDy + otherFinalVTangent * tangentY);
-
-
-
-                // Phong and Blinn-Phong shading calculations (no force) +
-                // hanterar bara då this är över otherCircle
-
-                // //vector from collision to this circle (Normal) (Normalised)
-                // let v1xN = this.x - collisionPointMidX;
-                // let v1yN = this.y - collisionPointMidY;
-                // v1xN = v1xN / Math.sqrt(v1xN ** 2 + v1yN ** 2);
-                // v1yN = v1yN / Math.sqrt(v1xN ** 2 + v1yN ** 2);
-                
-                // // vector from collision to input angle (L) (Normalised)
-                // let v1xL = -this.vx
-                // let v1yL = -this.vy
-                // v1xL = v1xL / Math.sqrt(v1xL ** 2 + v1yL ** 2);
-                // v1yL = v1yL / Math.sqrt(v1xL ** 2 + v1yL ** 2);
-
-                // // calculate the dot product of the two vectors
-                // let dotProduct1 = v1xL * v1xN + v1yL * v1yN;
-                // //dotProduct1 = Math.abs(dotProduct1);
-                // //console.log(dotProduct1);
-                // // calculate the reflection vector
-                // let reflectionX1 = 2 * dotProduct1 * v1xN - v1xL;
-                // let reflectionY1 = 2 * dotProduct1 * v1yN - v1yL;
-
-                // // vector from collision to other circle (Normal) (Normalised)
-                // let v2xN = otherCircle.x - collisionPointMidX;
-                // let v2yN = otherCircle.y - collisionPointMidY;
-                // v2xN = v2xN / Math.sqrt(v2xN ** 2 + v2yN ** 2);
-                // v2yN = v2yN / Math.sqrt(v2xN ** 2 + v2yN ** 2);
-
-                // // vector from collision to input angle (L) (Normalised)
-                // let v2xL = -otherCircle.vx
-                // let v2yL = -otherCircle.vy
-                // v2xL = v2xL / Math.sqrt(v2xL ** 2 + v2yL ** 2);
-                // v2yL = v2yL / Math.sqrt(v2xL ** 2 + v2yL ** 2);
-
-                // // calculate the dot product of the two vectors
-                // let dotProduct2 = v2xL * v2xN + v2yL * v2yN;
-                // //dotProduct2 = Math.abs(dotProduct2);
-                // // calculate the reflection vector
-                // let reflectionX2 = 2 * dotProduct2 * v2xN - v2xL;
-                // let reflectionY2 = 2 * dotProduct2 * v2yN - v2yL;
-
-                // // normalise the reflection vectors
-                // let reflectionSize = Math.sqrt(reflectionX1 ** 2 + reflectionY1 ** 2);
-                // reflectionX1 = reflectionX1 / reflectionSize;
-                // reflectionY1 = reflectionY1 / reflectionSize;
-
-                // let reflectionSize2 = Math.sqrt(reflectionX2 ** 2 + reflectionY2 ** 2);
-                // reflectionX2 = reflectionX2 / reflectionSize2;
-                // reflectionY2 = reflectionY2 / reflectionSize2;
-
-
-                // // size of previous velocity
-                // let v1Size = Math.sqrt(this.vx ** 2 + this.vy ** 2);
-                // let v2Size = Math.sqrt(otherCircle.vx ** 2 + otherCircle.vy ** 2);
-
-                // // calculate the new velocity
-                // let oldv1x = this.vx;
-                // let oldv1y = this.vy;
-                // this.vx = reflectionX1 * v1Size * this.elasticity + otherCircle.vx * (1 - otherCircle.elasticity);
-                // this.vy = reflectionY1 * v1Size * this.elasticity + otherCircle.vx * (1 - otherCircle.elasticity);
-                // otherCircle.vx = reflectionX2 * v2Size * otherCircle.elasticity + oldv1x * (1 - this.elasticity);
-                // otherCircle.vy = reflectionY2 * v2Size * otherCircle.elasticity + oldv1y * (1 - this.elasticity);
-
-
-
-                // calculate velocity with momentum and kinetic energy
-                
-                
-
-
-                // let tempV1 = this.vx * e + otherCircle.vx * (1 - otherCircle.elasticity);
-                // let tempV2 = this.vy * e + otherCircle.vy * (1 - otherCircle.elasticity);
-                // this.vx = otherCircle.vx * otherCircle.elasticity + this.vx * (1 - this.elasticity);
-                // this.vy = otherCircle.vy * otherCircle.elasticity + this.vy * (1 - this.elasticity);
-                // otherCircle.vx = tempV1;
-                // otherCircle.vy = tempV2;
-
                 return true;
             } else {
                 return false;

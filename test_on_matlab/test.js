@@ -307,8 +307,8 @@ window.addEventListener('DOMContentLoaded', () => {
                 let otherFinalVTangent = otherInitialVTangent;
 
                 // calculate the velocities in the normal direction after collision
-                let thisFinalVNormal = this.mass * thisInitialVNormal + otherCircle.mass * otherInitialVNormal + otherCircle.mass * otherCircle.eor * (otherInitialVNormal - thisInitialVNormal);
-                let otherFinalVNormal = this.mass * thisInitialVNormal + otherCircle.mass * otherInitialVNormal + this.mass * this.eor * (thisInitialVNormal - otherInitialVNormal);
+                let thisFinalVNormal = (this.mass * thisInitialVNormal + otherCircle.mass * otherInitialVNormal + otherCircle.mass * otherCircle.eor * (otherInitialVNormal - thisInitialVNormal))/(this.mass+otherCircle.mass);
+                let otherFinalVNormal = (this.mass * thisInitialVNormal + otherCircle.mass * otherInitialVNormal + this.mass * this.eor * (thisInitialVNormal - otherInitialVNormal))/(this.mass+otherCircle.mass);
 
 
 

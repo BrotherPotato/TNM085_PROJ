@@ -84,7 +84,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     function dragBalls() {
         console.log("clicked");
-        let mouseRadius = 550;
+        let mouseRadius = 1000;
         for (var i = 0; i < particleArray.length; i++) {
             var dx = Math.abs(mouse.x - particleArray[i].x);
             var dy = Math.abs(mouse.y - particleArray[i].y);
@@ -106,7 +106,13 @@ window.addEventListener('DOMContentLoaded', () => {
                 var dx = mouse.x - particleArray[i].x;
                 var dy = mouse.y - particleArray[i].y;
                 var distance = Math.sqrt(dx * dx + dy * dy);
-                var force = distance*2;
+                var minForce = 0.1;
+                var maxForce = 100;
+                // interpolate force
+                var force = (distance - particleArray[i].radius) / (mouseRadius - particleArray[i].radius) * (maxForce - minForce) + minForce;
+
+
+
                 var angle = Math.atan2(dy, dx);
                 var fx = Math.cos(angle) * force;
                 var fy = Math.sin(angle) * force;

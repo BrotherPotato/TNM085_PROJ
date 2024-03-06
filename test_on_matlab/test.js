@@ -216,8 +216,8 @@ window.addEventListener('DOMContentLoaded', () => {
             //scale the radius
             scaled_r = this.radius * 0.0001;
 
-            F_drag_x = -0.5 * rho * (Math.PI * (scaled_r ** 2)) * C * this.vx * v_mag_x;
-            F_drag_y = -0.5 * rho * (Math.PI * (scaled_r ** 2)) * C * this.vy * v_mag_y;
+            F_drag_x = -0.5 * rho * (Math.PI * (scaled_r ** 2)) * C * v_mag_x;
+            F_drag_y = -0.5 * rho * (Math.PI * (scaled_r ** 2)) * C * v_mag_y;
 
             this.ax += (F_drag_x / m);
             this.ay += (g + (F_drag_y / m));

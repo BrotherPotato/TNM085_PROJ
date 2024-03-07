@@ -8,8 +8,8 @@ window.addEventListener('DOMContentLoaded', () => {
     const m = 0.5; // mass (kg)
     const r = 0.02; // radius
     const A = Math.PI * (r ** 2); // cross section area (m^2)
-    const rho = 1.2; // air density (kg/m^3)
-    const C = 0.47; // drag coeff
+    const rho = 1.293; // air density (kg/m^3)
+    const C = 0.43; // drag coeff
 
 
     window.onresize = function () { location.reload(); }

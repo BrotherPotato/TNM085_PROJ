@@ -293,10 +293,10 @@ window.addEventListener('DOMContentLoaded', () => {
                 let collisionPointMidY = this.y - dy / 2;
 
                 //fix new position with collisionPointMid
-                this.x = collisionPointMidX + (this.radius  * 1.02) * normalizedDx;
-                this.y = collisionPointMidY + (this.radius  * 1.02) * normalizedDy;
-                otherCircle.x = collisionPointMidX - (otherCircle.radius * 1.02) * normalizedDx;
-                otherCircle.y = collisionPointMidY - (otherCircle.radius * 1.02) * normalizedDy;
+                this.x = collisionPointMidX + this.radius * normalizedDx;
+                this.y = collisionPointMidY + this.radius * normalizedDy;
+                otherCircle.x = collisionPointMidX - otherCircle.radius * normalizedDx;
+                otherCircle.y = collisionPointMidY - otherCircle.radius * normalizedDy;
 
                 //get tangetial vector to normal vector (90 degrees rotation counterclowise)
                 let tangentX = -normalizedDy;

@@ -1,25 +1,17 @@
 window.addEventListener('DOMContentLoaded', () => {
-
     // Define constants
     const g = 9.81; // acceleration due to gravity (m/s^2)
-    const e = 0.8; // coefficient of restitution
-    const dt = 0.001; // time step (s)
-    const total_time = 10; // total simulation time (s)
-    const m = 0.5; // mass (kg)
-    const r = 0.02; // radius
-    const A = Math.PI * (r ** 2); // cross section area (m^2)
     const rho = 1.293; // air density (kg/m^3)
-    const C = 0.43; // drag coeff
-
+    const C = 0.43; // drag coefficient for a sphere
 
     window.onresize = function () { location.reload(); }
     const FPS = 60;
+    const h = 10/FPS; 
     let tfCanvas = document.querySelector("#simCanvas");
     var c = tfCanvas.getContext("2d");
 
-    const h = 1/6;
-    //const h = 100/FPS; 
-
+    
+    // handle canvas size
     var displayWidth = window.innerWidth;
     var displayHeight = window.innerHeight;
     var scale = 2;
@@ -28,11 +20,8 @@ window.addEventListener('DOMContentLoaded', () => {
     tfCanvas.width = displayWidth * scale;
     tfCanvas.height = displayHeight * scale;
 
-
-    var mouse = { x: 0, y: 0, down: false, nodeSelected: -1 };
-
-    var rect = tfCanvas.getBoundingClientRect();
-    //console.log(rect);
+    // define mouse
+    var mouse = { x: 0, y: 0};
 
     function getMousePos(canvas, evt) {
         var rect = canvas.getBoundingClientRect();
@@ -47,15 +36,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
         mouse.x = mousePos.x * scale;
         mouse.y = mousePos.y * scale;
-        mouse.down = e.buttons == 1;
-        //console.log(mouse);
-        //console.log(particleArray[0]);
-        //console.log(e.buttons == 1); 
-        if (e.buttons == 0) {
-            mouse.nodeSelected = -1;
-        }
-
-
     }, false);
 
     window.addEventListener('mousedown', function (e) {
@@ -63,17 +43,11 @@ window.addEventListener('DOMContentLoaded', () => {
 
         mouse.x = mousePos.x * scale;
         mouse.y = mousePos.y * scale;
-        mouse.down = e.buttons == 1;
         console.log(mouse);
-        //console.log(e.buttons == 1); 
-        if (e.buttons == 0) {
-            mouse.nodeSelected = -1;
-        }
+
         if (e.buttons == 1) {
             dragBallInterval = setInterval(dragBalls, FPS);
         }
-
-
     }, false);
 
     window.addEventListener('mouseup', function (e) {
@@ -95,12 +69,6 @@ window.addEventListener('DOMContentLoaded', () => {
                 c.moveTo(particleArray[i].x, particleArray[i].y);
                 c.lineTo(mouse.x, mouse.y);
                 c.stroke();
-                //draw circle at mouse
-                // c.beginPath();
-                // c.arc(mouse.x, mouse.y, mouseRadius, 0, Math.PI * 2, false);
-                // c.fillStyle = "red";
-                // c.fill();
-                // c.stroke();
 
                 // add force to particle
                 var dx = mouse.x - particleArray[i].x;
@@ -111,62 +79,17 @@ window.addEventListener('DOMContentLoaded', () => {
                 // interpolate force
                 var force = (distance - particleArray[i].radius) / (mouseRadius - particleArray[i].radius) * (maxForce - minForce) + minForce;
 
-
-
                 var angle = Math.atan2(dy, dx);
                 var fx = Math.cos(angle) * force;
                 var fy = Math.sin(angle) * force;
 
-                particleArray[i].ax += fx/m;
-                particleArray[i].ay += fy/m;
-
-                particleArray[i].vx += particleArray[i].ax * h;
-                particleArray[i].vy += particleArray[i].ay * h;
-
-                particleArray[i].x += particleArray[i].vx * h;
-                particleArray[i].y += particleArray[i].vy * h;
+                particleArray[i].ax += fx/particleArray[i].mass;
+                particleArray[i].ay += fy/particleArray[i].mass;
             }
         }
     }
 
-    /* let dragBallInterval;
-
-    function dragBalls() {
-        let mouseRadius = 550;
-        for (var i = 0; i < particleArray.length; i++) {
-            var dx = mouse.x - particleArray[i].x;
-            var dy = mouse.y - particleArray[i].y;
-            var distance = Math.sqrt(dx * dx + dy * dy);
-
-            if (distance <= particleArray[i].radius + mouseRadius) { // Change 10 to the radius you want for mouse interaction
-
-                c.beginPath();
-                c.moveTo(particleArray[i].x, particleArray[i].y);
-                c.lineTo(mouse.x, mouse.y);
-                c.stroke();
-
-                // add force to particle
-                var dx = mouse.x - particleArray[i].x;
-                var dy = mouse.y - particleArray[i].y;
-                var distance = Math.sqrt(dx * dx + dy * dy);
-                var force = distance*0.005;
-                var angle = Math.atan2(dy, dx);
-                var fx = Math.cos(angle) * force;
-                var fy = Math.sin(angle) * force;
-
-                particleArray[i].ax = (fx / m) * dt;
-                particleArray[i].ay = (fy / m) * dt;
-
-                particleArray[i].vx += particleArray[i].ax *dt;
-                particleArray[i].vy += particleArray[i].ay * dt;
-
-                particleArray[i].x += particleArray[i].vx;
-                particleArray[i].y += particleArray[i].vy; 
-            }
-        }
-    }
- */
-    function Cricle(x, y, vx, vy, ax, ay, radius, color, type) {
+    function Cricle(x, y, vx, vy, ax, ay, radius, color) {
         this.x = x;
         this.y = y;
         this.vx = vx;
@@ -175,24 +98,15 @@ window.addEventListener('DOMContentLoaded', () => {
         this.ay = ay;
         this.radius = radius;
         this.color = color;
-        this.type = type;
-        this.eor = e;
-        this.eorWall = 0.9;
-        this.mass = m;
+        this.eor = 0.8; // coefficient of restitution between particles
+        this.eorWall = 0.9; // coefficient of restitution between particle and wall
+        this.mass = 0.5; // mass (kg) of the particle
 
         this.draw = function () {
             c.beginPath();
             c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-
-            //c.fillStyle = this.color;
-            //console.log(this.color);    
-            //c.fillStyle = "red";
             c.fillStyle = hexToRgb(this.color);
-            //c.fillStyle = this.color;
-
             c.fill();
-
-            //context.strokeStyle = '#003300';
             c.stroke();
         }
 
@@ -225,9 +139,8 @@ window.addEventListener('DOMContentLoaded', () => {
             F_drag_x = -0.5 * rho * (Math.PI * (scaled_r ** 2)) * C * Math.sign(this.vx) * v_mag_x;
             F_drag_y = -0.5 * rho * (Math.PI * (scaled_r ** 2)) * C * Math.sign(this.vy) * v_mag_y;
 
-            this.ax += (F_drag_x / m);
-            this.ay += (g + (F_drag_y / m));
-            // }
+            this.ax += (F_drag_x / this.mass);
+            this.ay += (g + (F_drag_y / this.mass));
 
             // Update velocity
             this.vx += this.ax * h;
@@ -256,13 +169,13 @@ window.addEventListener('DOMContentLoaded', () => {
                 let friction = this.getContainerFriction(this.vy);
                 this.ay = friction/this.mass;
             }
-            if (this.y + this.radius >= tfCanvas.height) { // botten
+            if (this.y + this.radius >= tfCanvas.height) { // ner
                 this.y = tfCanvas.height - this.radius;
                 this.vy = -this.vy * this.eorWall;
                 let friction = this.getContainerFriction(this.vx);
                 this.ax = friction/this.mass;
             }
-            if (this.y - this.radius <= 0) { // topp
+            if (this.y - this.radius <= 0) { // upp
                 this.y = this.radius;
                 this.vy = -this.vy * this.eorWall;
                 let friction = this.getContainerFriction(this.vx);
@@ -271,9 +184,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
             for (var i = 0; i < particleArray.length; i++) {
                 if (this === particleArray[i]) continue;
-                // if (this.checkCollision(particleArray[i])) {
-
-                // }
 
                 this.checkCollision(particleArray[i])
             }
@@ -316,8 +226,6 @@ window.addEventListener('DOMContentLoaded', () => {
                 let thisFinalVNormal = (this.mass * thisInitialVNormal + otherCircle.mass * otherInitialVNormal + otherCircle.mass * otherCircle.eor * (otherInitialVNormal - thisInitialVNormal))/(this.mass+otherCircle.mass);
                 let otherFinalVNormal = (this.mass * thisInitialVNormal + otherCircle.mass * otherInitialVNormal + this.mass * this.eor * (thisInitialVNormal - otherInitialVNormal))/(this.mass+otherCircle.mass);
 
-
-
                 // set new velocities
                 this.vx = (thisFinalVNormal * normalizedDx + thisFinalVTangent * tangentX);
                 this.vy = (thisFinalVNormal * normalizedDy + thisFinalVTangent * tangentY);
@@ -335,13 +243,6 @@ window.addEventListener('DOMContentLoaded', () => {
             c.lineTo(this.x + this.vx, this.y + this.vy);
             c.stroke();
         }
-        this.drawCircleAcc = function () {
-            c.beginPath();
-            c.moveTo(this.x, this.y);
-            c.lineTo(this.x + this.ax, this.y + this.ay);
-            c.stroke();
-        }
-
     }
 
     var particleArray = [];
@@ -404,46 +305,31 @@ window.addEventListener('DOMContentLoaded', () => {
             x = Math.random() * (tfCanvas.width - radius * 2) + radius;
             y = Math.random() * (tfCanvas.height - radius * 2) + radius;
         }
-
-        let g = 9.81;
+        // start with random velocity and acceleration
         var vx = 100 * (Math.random() * 2 - 1);
         var vy = 100 * (Math.random() * 2 - 1);
         var ax = 100 * (Math.random() * 2 - 1);
         var ay = 100 * (Math.random() * 2 - 1) ;
 
-
-
         var color = getNextColor();
-        //console.log(color);
-        var type = 'water';
-        particleArray.push(new Cricle(x, y, vx, vy, ax, ay, radius, color, type));
+        particleArray.push(new Cricle(x, y, vx, vy, ax, ay, radius, color));
     }
 
     function animate() {
-        //requestAnimationFrame(animate);
         c.clearRect(0, 0, innerWidth * 2, innerHeight * 2);
 
-        c.lineWidth = 1;
         for (var i = 0; i < particleArray.length; i++) {
             particleArray[i].moveCircle();
             particleArray[i].update();
             particleArray[i].drawCircleVelocity();
-            particleArray[i].drawCircleAcc();
         }
-
     }
     var color = getNextColor();
-    particleArray.push(new Cricle(625, 300, -0.5, 0.5, 0, 0, 50, color, "water"));
-    particleArray.push(new Cricle(300, 600, 2, -2, 0, 0, 50, color, "water"));
+    particleArray.push(new Cricle(625, 300, -0.5, 0.5, 0, 0, 50, color));
+    particleArray.push(new Cricle(300, 600, 2, -2, 0, 0, 50, color));
 
-    particleArray.push(new Cricle(500, 500, 1, 1, 0, 0, 50, "#283618", "water"));
-    particleArray.push(new Cricle(800, 800, -2, -2, 0, 0, 50, "#283618", "water"));
-
-    //particleArray.push(new Cricle(500, 500, 1, 0, 0, 0, 10, color, "water"));
-    //particleArray.push(new Cricle(700, 500, -2, 0, 0, 0, 10, color, "water"));
-    //createParticle()
-    //animate();
+    particleArray.push(new Cricle(500, 500, 1, 1, 0, 0, 50, color));
+    particleArray.push(new Cricle(800, 800, -2, -2, 0, 0, 50, color));
 
     window.setInterval(animate, 1000 / FPS);
-
 });

@@ -170,6 +170,7 @@
                 F_drag_x = -0.5 * rho * (Math.PI * (scaled_r ** 2)) * C * Math.sign(this.vx) * v_mag_x;
                 F_drag_y = -0.5 * rho * (Math.PI * (scaled_r ** 2)) * C * Math.sign(this.vy) * v_mag_y;
 
+                // += since we keep the friction from the last iteration
                 this.ax += (F_drag_x / this.mass);
                 this.ay += (g + (F_drag_y / this.mass));
 
@@ -180,7 +181,7 @@
                 // Update position
                 this.x += this.vx * h;
                 this.y += this.vy * h;
-
+                // Reset acceleration each iteration
                 this.ax = 0;
                 this.ay = 0;
 
